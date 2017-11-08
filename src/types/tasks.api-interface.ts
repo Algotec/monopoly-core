@@ -1,0 +1,13 @@
+import {AsyncResult, Logger} from "./index";
+
+export interface TaskInfo extends AsyncResult {
+	taskInfo: {
+		id: string;
+		title: string;
+		description: string;
+	}
+}
+
+export interface TasksManagementAPIInterface {
+	getTaskInfo(logger: Logger, id: string): Promise<TaskInfo>;
+}
