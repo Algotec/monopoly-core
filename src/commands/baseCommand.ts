@@ -66,9 +66,6 @@ export abstract class BaseCommand {
 							(result) ? final.push(result) : null;
 						})
 				})
-				.catch((e) => {
-					throw new Error(e);
-				});
 		}, Promise.resolve());
 		return final;
 	}

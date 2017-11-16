@@ -38,10 +38,10 @@ export class InitCommand extends BaseCommand {
 				await this.exec('lerna init --loglevel=warn');
 				await this.commitAll();
 				await this.exec('aws add web-common/web-config');
-				await this.commitAll('adding web-config module');
 				this.spinner.succeed('workspace created!')
 			} catch (e) {
 				this.spinner.fail(`unable to init git monopoly repo`);
+				this.debug(e.stack);
 				throw new DieHardError(`git exit code ${e}`);
 			} finally {
 				this.spinner.stop();

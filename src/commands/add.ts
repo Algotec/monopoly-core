@@ -27,7 +27,7 @@ export class AddCommand extends BaseCommand {
 						return new DieHardError('Could not clone repo, can not get repo URL');
 					}
 					const url = repoResult.repo.url;
-					const defaultBranch = repoResult.repo.defaultBranch;
+					const defaultBranch = repoResult.repo.defaultBranch.replace('refs/heads/','');
 					this.spinner.info(chalk.green(`Adding submodule ${repoName} ....`)).start();
 					const cmds = [
 						`git submodule add --force -b ${branch || defaultBranch} ${url} ${repoName}`,
