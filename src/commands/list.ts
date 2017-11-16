@@ -2,6 +2,7 @@ import {DieHardError, Logger} from "../types/index";
 import {RepoApiInterface} from "../types/repo.api-interface";
 import chalk from "chalk";
 import {BaseCommand} from "./baseCommand";
+import {consoleLogger} from "../lib/logger";
 
 export class ListCommand extends BaseCommand {
 
@@ -14,12 +15,13 @@ export class ListCommand extends BaseCommand {
 				if (repoListResult.repoList) {
 					const repoList = repoListResult.repoList;
 					for (let project of repoList) {
-						this.info(chalk.red(`Project : ${project.organization}`));
+						consoleLogger.info(chalk.red(`Project : ${project.organization}`));
 						project.repos.forEach((repoName) => {
-							this.info(chalk.green(`    ${repoName}`));
+							consoleLogger.info(chalk.green(`    ${repoName}`));
 						});
 					}
 				}
+				this.spinner.stop();
 			} catch (e) {
 				return new DieHardError('unable to list repositories, check connection: ' + e)
 			}
