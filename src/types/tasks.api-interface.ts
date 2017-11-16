@@ -9,5 +9,6 @@ export interface TaskInfo extends AsyncResult {
 }
 
 export interface TasksManagementAPIInterface {
+	setCredentials(username: string, password: string):void;
 	getTaskInfo(logger: Logger, id: string): Promise<TaskInfo>;
 }

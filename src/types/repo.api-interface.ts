@@ -28,6 +28,8 @@ export interface OpenPRResult extends AsyncResult {
 }
 
 export interface RepoApiInterface {
+	setCredentials(username: string, password: string):void;
+
 	list(logger: Logger, filter: { name?: string, organization?: string }): Promise<repoListResults>;
 
 	getRepo(logger: Logger, filter: { name?: string, organization?: string }): Promise<repoResult>;
