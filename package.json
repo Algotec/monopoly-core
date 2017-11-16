@@ -1,5 +1,5 @@
 {
-  "name": "monopoly",
+  "name": "@algotec/monopoly",
   "version": "0.0.1",
   "description": "A CLI tool to work with the multiple repos as a monorepo",
   "main": "dist/index.js",

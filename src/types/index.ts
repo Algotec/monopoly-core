@@ -1,7 +1,7 @@
 import {cliLogger} from "../lib/logger";
 
-export {RepoApiInterface, repoList, repoListResults,OpenPRResult} from "./repo.api-interface";
-export {TasksManagementAPIInterface, TaskInfo} from "./tasks.api-interface";
+export * from "./repo.api-interface";
+export * from "./tasks.api-interface";
 import chalk from 'chalk';
 
 export interface Logger {
@@ -21,6 +21,7 @@ export type STATUS = 'OK' | "ERROR";
 export interface SingleValueResult<T> extends AsyncResult {
 	data?: T;
 }
+
 export class GenericAsyncError implements AsyncResult {
 	status = 'ERROR' as STATUS;
 
@@ -28,7 +29,7 @@ export class GenericAsyncError implements AsyncResult {
 
 }
 
-export class DieHardError extends Error{
+export class DieHardError extends Error {
 	constructor(message: string) {
 		super(message);
 		cliLogger.error(chalk.red(message));
