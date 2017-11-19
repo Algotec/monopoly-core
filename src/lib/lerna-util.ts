@@ -51,8 +51,9 @@ export class LernaUtil {
 		return await Promise.all(this.packageFolders.map(async (packageFolder: string) => {
 				const filePath = `./${packageFolder}/package.json`;
 				const json = (await new FileDocument(filePath).read()).content;
+				const url = (json.repository) ? json.repository.url : '';
 				return {
-					filename: filePath, json, version: json.version, name: json.name, repoUrl: json.repository.url, folder: packageFolder
+					filename: filePath, json, version: json.version, name: json.name, repoUrl: url, folder: packageFolder
 				};
 			})
 		);
