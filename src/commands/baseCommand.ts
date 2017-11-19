@@ -44,8 +44,16 @@ export type cmdArray = [ShellCommands, string] | [ShellCommands, string, string]
 export type cmdsArray = Array<string | cmdArray | asyncCommandFn>;
 
 export abstract class BaseCommand {
-	repoApi:RepoApiInterface;
-	taskApi:TasksManagementAPIInterface;
+
+	constructor() {
+		this.repoApi = BaseCommand.repoApi;
+		this.taskApi = BaseCommand.taskApi;
+	}
+
+	static repoApi: RepoApiInterface;
+	repoApi: RepoApiInterface;
+	static taskApi: TasksManagementAPIInterface;
+	taskApi: TasksManagementAPIInterface;
 	log = cliLogger.log;
 	debug = cliLogger.debug;
 	warn = cliLogger.warn;
@@ -120,6 +128,6 @@ export abstract class BaseCommand {
 		((sh as any).ShellString(content)as any).to(filename);
 	}
 
-	abstract getHandler(repoApi?: RepoApiInterface, tasksApi?: TasksManagementAPIInterface): (args: { [k: string]: any }, options: { [k: string]: any }, logger: Logger) => void;
+	abstract getHandler(): void;
 }
 

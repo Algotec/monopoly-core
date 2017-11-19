@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import chalk from "chalk";
 import {consoleLogger} from './logger';
-import {PackageInfo} from "./lerna-util";
+import {PackageInfo} from "../types";
 import * as semver from 'semver'
 
 const log = consoleLogger.info;

@@ -28,5 +28,3 @@ export class UpdateCommand extends BaseCommand {
 		}
 	}
 }
-
-export default new UpdateCommand();

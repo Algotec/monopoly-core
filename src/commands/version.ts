@@ -28,5 +28,3 @@ export class VersionCommand extends BaseCommand {
 	}
 
 }
-
-export default new VersionCommand();

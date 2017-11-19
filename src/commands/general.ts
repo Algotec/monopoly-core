@@ -23,5 +23,3 @@ export class GeneralCommand extends BaseCommand {
 
 	}
 }
-
-export default new GeneralCommand();

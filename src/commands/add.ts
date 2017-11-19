@@ -8,7 +8,7 @@ export const projectRepoValidator = /\w+\/\w+/g;
 
 export class AddCommand extends BaseCommand {
 
-	getHandler(repoApi: RepoApiInterface) {
+	getHandler() {
 		return async (args: { [k: string]: any }, options: { [k: string]: any }, logger: Logger) => {
 			this.debug(`${this.constructor.name} handler args: ${JSON.stringify(args)} + options :${JSON.stringify(options)}`);
 			if (!isInMonopoly()) {
@@ -22,7 +22,7 @@ export class AddCommand extends BaseCommand {
 				await Promise.all(projectRepoNames.map(async (projectAndRepo: string) => {
 					const [project, repoName] = projectAndRepo.split('/');
 
-					const repoResult = await repoApi.getRepo(logger, {organization: project, name: repoName});
+					const repoResult = await this.repoApi.getRepo(logger, {organization: project, name: repoName});
 					if (repoResult.status != 'OK' || !repoResult.repo) {
 						return new DieHardError('Could not clone repo, can not get repo URL');
 					}
@@ -51,5 +51,3 @@ export class AddCommand extends BaseCommand {
 		}
 	}
 }
-
-export default new AddCommand();

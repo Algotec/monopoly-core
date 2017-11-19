@@ -27,5 +27,3 @@ export class CheckoutCommand extends BaseCommand {
 		}
 	}
 }
-
-export default new CheckoutCommand();

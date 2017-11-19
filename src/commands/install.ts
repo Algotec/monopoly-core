@@ -27,5 +27,3 @@ export class InstallCommand extends BaseCommand {
 		}
 	}
 }
-
-export default new InstallCommand();

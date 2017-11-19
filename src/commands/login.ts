@@ -1,11 +1,11 @@
 import {BaseCommand} from "./baseCommand";
-import {Logger, RepoApiInterface, TasksManagementAPIInterface} from "../types";
+import {Logger} from "../types";
 import * as inquirer from "inquirer";
 import * as keytar from 'keytar';
 import {SERVICE_NAME} from "../index";
 
 export class LoginCommand extends BaseCommand {
-	getHandler(repoApi: RepoApiInterface, tasksApi: TasksManagementAPIInterface) {
+	getHandler() {
 		return async (args: { [p: string]: any }, options: { [p: string]: any }, logger: Logger) => {
 			const answers = await inquirer.prompt([
 				{type: 'input', name: 'username', message: 'please enter your domain username'},
@@ -18,5 +18,3 @@ export class LoginCommand extends BaseCommand {
 	}
 
 }
-
-export default new LoginCommand();

@@ -55,5 +55,3 @@ export class InitCommand extends BaseCommand {
 		await this.exec(`git commit -am"${message}"`);
 	}
 }
-
-export default new InitCommand();

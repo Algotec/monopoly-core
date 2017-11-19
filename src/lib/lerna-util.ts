@@ -3,30 +3,8 @@ import {FileDocument} from "./fileDocument";
 import * as path from "path";
 import * as fs from "fs";
 import * as glob from "glob";
+import {lernaJsonType, PackageInfo} from "../types/package.types";
 
-export type lernaJsonType = {
-	packages: string[]
-	[key: string]: any,
-}
-
-export interface PackageJsonType {
-	name: string;
-	version: string;
-	dependencies?: { [key: string]: string };
-	devDependencies?: { [key: string]: string };
-	peerDependencies?: { [key: string]: string };
-
-	[key: string]: any;
-}
-
-export interface PackageInfo {
-	filename: string,
-	json: PackageJsonType,
-	version: string,
-	name: string,
-	repoUrl: string
-	folder: string
-}
 
 export class LernaUtil {
 	private lernaJson: FileDocument<lernaJsonType>;

@@ -5,7 +5,7 @@ import {isInMonopoly} from "../lib/fs";
 import {BaseCommand, cmdsArray, ShellCommands} from "./baseCommand";
 
 export class RemoveCommand extends BaseCommand {
-	getHandler(repoApi: RepoApiInterface) {
+	getHandler() {
 		return async (args: { [k: string]: any }, options: { [k: string]: any }, logger: Logger) => {
 			this.debug(`${this.constructor.name} handler args: ${JSON.stringify(args)} + options :${JSON.stringify(options)}`);
 			if (!isInMonopoly()) {
@@ -40,5 +40,3 @@ export class RemoveCommand extends BaseCommand {
 		}
 	}
 }
-
-export default new RemoveCommand();

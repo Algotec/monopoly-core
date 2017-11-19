@@ -28,5 +28,3 @@ export class LinkCommand extends BaseCommand {
 		}
 	}
 }
-
-export default new LinkCommand();

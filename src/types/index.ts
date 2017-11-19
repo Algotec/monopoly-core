@@ -2,6 +2,7 @@ import {cliLogger} from "../lib/logger";
 
 export * from "./repo.api-interface";
 export * from "./tasks.api-interface";
+export * from "./package.types";
 import chalk from 'chalk';
 
 export interface Logger {
