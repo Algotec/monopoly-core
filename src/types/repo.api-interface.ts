@@ -47,7 +47,7 @@ export interface RepoApiInterface {
 
 	list(logger: Logger, filter: { name?: string, organization?: string }, branch: string | undefined, dependencies?: string | boolean): Promise<RepoListResults>;
 
-	listBranches(logger: Logger, project: string, repoName: string, filter: string): Promise<BranchListSearchResult>;
+	listBranches(logger: Logger, project: string, repoName: string, filter?: string): Promise<BranchListSearchResult>;
 
 	listDependencies(logger: Logger, project: string, repoName: string, branch?: string,dependenciesFilter?:string): Promise<DependenciesSearchResult>;
 

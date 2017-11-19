@@ -66,7 +66,7 @@ export class ListCommand extends BaseCommand {
 				const [project, repoName] = this.getProjectRepo(args);
 				const filter: IRepoSearchOpts = {organization: options.project, name: options.name};
 				if (project || repoName) {
-					await this.listBranches(project, repoName, filter.name, options.json, logger);
+					await this.listBranches(logger,project, repoName, filter.name, options.json);
 				} else {
 					await this.listReposAndprojects(filter, options.deps, options.branch, options.json, logger);
 				}
@@ -105,7 +105,7 @@ export class ListCommand extends BaseCommand {
 		this.spinner.stop();
 	}
 
-	private async listBranches(project: string, repoName: string, filter: string | undefined, json: boolean | undefined, logger: Logger) {
+	private async listBranches(logger: Logger,project: string, repoName: string, filter?: string , json?: boolean) {
 		if (!json) {
 			this.spinner.info(chalk.red(`listing branches on ${project}${repoName ? `/${repoName}` : ''}`)).start();
 		}
@@ -114,7 +114,7 @@ export class ListCommand extends BaseCommand {
 			consoleLogger.info(JSON.stringify(branchSearchResult.branchList, null, 4))
 		} else {
 			if (branchSearchResult.branchList) {
-				branchSearchResult.branchList.forEach(branchName => {
+				branchSearchResult.branchList.forEach((branchName:string) => {
 					consoleLogger.info(chalk.green(branchName));
 				});
 			}
