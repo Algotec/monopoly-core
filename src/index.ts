@@ -37,7 +37,8 @@ export default function makeCli(repoApi: RepoApiInterface, tasksApi: TasksManage
 		.argument('[folder]', 'folder to create  - defaults to current folder', cli.STRING, '.')
 		.action(initCommand.getHandler());
 
-	cli.command('list', 'list repositories')
+	cli.command('list', 'list repositories or branches in repo')
+		.argument('<projectRepoNames>', 'project  & repository name(s) - causes branch search',projectRepoValidator)
 		.option('--project <projectFilter>', 'filter by project name')
 		.option('--name <nameFilter>', 'filter by repository name')
 		.action(listCommand.getHandler(repoApi));

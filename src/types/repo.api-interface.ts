@@ -1,9 +1,15 @@
 import {AsyncResult, Logger, SingleValueResult} from "./index";
+import {IRepoSearchOpts} from "../commands/list";
+export  {IRepoSearchOpts} from "../commands/list";
 
 export type repoList = { organization: string, repos: string[] }[];
 
-export interface repoListResults extends AsyncResult {
+export interface RepoListResults extends AsyncResult {
 	repoList?: repoList;
+}
+
+export interface BranchListSearchResult extends AsyncResult {
+	branchList?: string[] ;
 }
 
 export interface RepoInterface {
@@ -28,9 +34,11 @@ export interface OpenPRResult extends AsyncResult {
 }
 
 export interface RepoApiInterface {
-	setCredentials(username: string, password: string):void;
+	setCredentials(username: string, password: string): void;
 
-	list(logger: Logger, filter: { name?: string, organization?: string }): Promise<repoListResults>;
+	list(logger: Logger, filter: { name?: string, organization?: string }): Promise<RepoListResults>;
+
+	listBranches(logger: Logger, project: string, repoName: string, filter: string): Promise<BranchListSearchResult>;
 
 	getRepo(logger: Logger, filter: { name?: string, organization?: string }): Promise<repoResult>;
 
