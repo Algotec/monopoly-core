@@ -12,41 +12,24 @@ import {CheckoutCommand} from "./commands/checkout";
 import {UpdateCommand} from "./commands/update";
 import {LinkCommand} from "./commands/link";
 import {VersionCommand} from "./commands/version";
-import {LoginCommand} from "./commands/login";
+import {Credentials, LoginCommand} from "./commands/login";
 import {GeneralCommand} from "./commands/general";
 import {InstallCommand} from "./commands/install";
 import {PullRequestCommand} from "./commands/pull-request";
 import './lib/ide-fix';
-
 import {cliLogger} from "./lib/logger";
 import * as path from "path";
-import * as clortho from "clortho";
-
-export const SERVICE_NAME = 'monopoly';
-import * as username from 'username'
 import {BaseCommand} from "./commands/baseCommand";
 
-const usernameFromOS = username.sync().toLowerCase();
 
 export default function makeCli(repoApi: RepoApiInterface, tasksApi: TasksManagementAPIInterface): CliTool {
-
-	const loginPrompt = clortho.forService(SERVICE_NAME);
-	loginPrompt.getFromKeyChain(usernameFromOS).then((credentials: clortho.Credentials) => {
-		const {username, password} = credentials;
-		if (username && password) {
-			tasksApi.setCredentials(username, password);
-			repoApi.setCredentials(username, password);
-		} else {
-			cliLogger.warn('Not logged in to monopoly, please run login command');
-		}
-	});
-
-
 	BaseCommand.repoApi = repoApi;
 	BaseCommand.taskApi = tasksApi;
 
-	const listCommand = new ListCommand();
 	const loginCommand = new LoginCommand();
+	loginCommand.getCredentials()
+
+	const listCommand = new ListCommand();
 	const removeCommand = new RemoveCommand();
 	const updateCommand = new UpdateCommand();
 	const installCommand = new InstallCommand();
@@ -59,9 +42,8 @@ export default function makeCli(repoApi: RepoApiInterface, tasksApi: TasksManage
 		.logger(cliLogger as any)
 		.version('0.0.1');
 
-
 	cli.command('login', 'stores username and password for repo access')
-		.action(loginCommand.getHandler(usernameFromOS));
+		.action(loginCommand.getHandler());
 
 	cli.command('init', 'init a new monopoly workspace at current folder')
 		.argument('[folder]', 'folder to create  - defaults to current folder', cli.STRING, '.')
