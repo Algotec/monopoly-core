@@ -128,6 +128,6 @@ export abstract class BaseCommand {
 		((sh as any).ShellString(content)as any).to(filename);
 	}
 
-	abstract getHandler(): void;
+	abstract getHandler(...args:any[]): void;
 }
 

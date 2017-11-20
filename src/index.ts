@@ -20,13 +20,27 @@ import './lib/ide-fix';
 
 import {cliLogger} from "./lib/logger";
 import * as path from "path";
-import * as keytar from "keytar";
+import * as clortho from "clortho";
 
 export const SERVICE_NAME = 'monopoly';
 import * as username from 'username'
 import {BaseCommand} from "./commands/baseCommand";
 
+const usernameFromOS = username.sync().toLowerCase();
+
 export default function makeCli(repoApi: RepoApiInterface, tasksApi: TasksManagementAPIInterface): CliTool {
+
+	const loginPrompt = clortho.forService(SERVICE_NAME);
+	loginPrompt.getFromKeyChain(usernameFromOS).then((credentials: clortho.Credentials) => {
+		const {username, password} = credentials;
+		if (username && password) {
+			tasksApi.setCredentials(username, password);
+			repoApi.setCredentials(username, password);
+		} else {
+			cliLogger.warn('Not logged in to monopoly, please run login command');
+		}
+	});
+
 
 	BaseCommand.repoApi = repoApi;
 	BaseCommand.taskApi = tasksApi;
@@ -47,7 +61,7 @@ export default function makeCli(repoApi: RepoApiInterface, tasksApi: TasksManage
 
 
 	cli.command('login', 'stores username and password for repo access')
-		.action(loginCommand.getHandler());
+		.action(loginCommand.getHandler(usernameFromOS));
 
 	cli.command('init', 'init a new monopoly workspace at current folder')
 		.argument('[folder]', 'folder to create  - defaults to current folder', cli.STRING, '.')
@@ -124,18 +138,6 @@ export default function makeCli(repoApi: RepoApiInterface, tasksApi: TasksManage
 		.action(new VersionCommand().getHandler());
 
 	(status as any).default();
-
-
-	const user = username.sync().toLowerCase();
-	keytar.getPassword(SERVICE_NAME, user).then(password => {
-		// cliLogger.debug(`password got from OS ${password}`);
-		if (user && password) {
-			tasksApi.setCredentials(user, password);
-			repoApi.setCredentials(user, password);
-		} else {
-			cliLogger.warn('Not logged in to monopoly, please run login command');
-		}
-	});
 
 	return cli as CliTool;
 }

@@ -1,19 +1,16 @@
 import {BaseCommand} from "./baseCommand";
 import {Logger} from "../types";
-import * as inquirer from "inquirer";
-import * as keytar from 'keytar';
+import * as clortho from 'clortho';
 import {SERVICE_NAME} from "../index";
+const loginPrompt = clortho.forService(SERVICE_NAME);
 
 export class LoginCommand extends BaseCommand {
-	getHandler() {
+	getHandler(user:string) {
 		return async (args: { [p: string]: any }, options: { [p: string]: any }, logger: Logger) => {
-			const answers = await inquirer.prompt([
-				{type: 'input', name: 'username', message: 'please enter your domain username'},
-				{type: 'password', name: 'password', message: 'please enter your domain password'}]);
+			const credentials = await loginPrompt.prompt(user,'Please login to Monopoly');
+			const {username, password} = credentials;
+			loginPrompt.saveToKeychain(username,password);
 
-			const {username, password} = answers;
-			keytar.setPassword(SERVICE_NAME, username, password);
-			//this.debug(`setting username and password : ${username} : ${[password]}`);
 		}
 	}
 
