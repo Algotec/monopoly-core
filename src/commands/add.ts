@@ -27,6 +27,9 @@ export class AddCommand extends BaseCommand {
 						return new DieHardError('Could not clone repo, can not get repo URL');
 					}
 					const url = repoResult.repo.url;
+					if (!repoResult.repo.defaultBranch) {
+						return new DieHardError('The repo does not have a branch yet, perhaps a bare repo?');
+					}
 					const defaultBranch = repoResult.repo.defaultBranch.replace('refs/heads/','');
 					this.spinner.info(chalk.green(`Adding submodule ${repoName} ....`)).start();
 					const cmds = [
