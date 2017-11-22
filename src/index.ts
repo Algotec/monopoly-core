@@ -21,13 +21,13 @@ import {cliLogger} from "./lib/logger";
 import * as path from "path";
 import {BaseCommand} from "./commands/baseCommand";
 
-
+const packageJson = require('../package.json');
 export default function makeCli(repoApi: RepoApiInterface, tasksApi: TasksManagementAPIInterface): CliTool {
 	BaseCommand.repoApi = repoApi;
 	BaseCommand.taskApi = tasksApi;
 
 	const loginCommand = new LoginCommand();
-	loginCommand.getCredentials()
+	loginCommand.getCredentials();
 
 	const listCommand = new ListCommand();
 	const removeCommand = new RemoveCommand();
@@ -40,10 +40,12 @@ export default function makeCli(repoApi: RepoApiInterface, tasksApi: TasksManage
 
 	const cli = caporal
 		.logger(cliLogger as any)
-		.version('0.0.1');
+		.version(packageJson.version);
 
 	cli.command('login', 'stores username and password for repo access')
 		.action(loginCommand.getHandler());
+	cli.command('logout', 'removes username and password storage')
+		.action(loginCommand.logOutHandler);
 
 	cli.command('init', 'init a new monopoly workspace at current folder')
 		.argument('[folder]', 'folder to create  - defaults to current folder', cli.STRING, '.')

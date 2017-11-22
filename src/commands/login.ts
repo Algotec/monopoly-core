@@ -11,6 +11,8 @@ import {cliLogger} from "../lib/logger";
 const usernameFromOS = username.sync().toLowerCase();
 
 export class LoginCommand extends BaseCommand {
+	loginCommandWorking: boolean = false;
+
 
 	async getCredentials() {
 		let credentials: Credentials = {username: '', password: ''};
@@ -24,15 +26,21 @@ export class LoginCommand extends BaseCommand {
 			if (username && password) {
 				this.taskApi.setCredentials(username, password);
 				this.repoApi.setCredentials(username, password);
-			} else {
+			} else if (!this.loginCommandWorking) {
 				cliLogger.warn('Not logged in to monopoly, please run login command');
 			}
 		}
 	}
 
+
+	async logOutHandler() {
+		return await loginPrompt.removeFromKeychain(usernameFromOS);
+	}
+
 	getHandler() {
 		return async (args: { [p: string]: any }, options: { [p: string]: any }, logger: Logger) => {
-			const credentials = await loginPrompt.prompt(usernameFromOS, 'Please login to Monopoly');
+			this.loginCommandWorking = true;
+			const credentials = await loginPrompt.prompt(usernameFromOS, 'Please login to Monopoly', true);
 			const {username, password} = credentials;
 			try {
 				const sucess = await loginPrompt.saveToKeychain(username, password);
