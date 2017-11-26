@@ -17,7 +17,7 @@ export class InstallCommand extends BaseCommand {
 				this.debug(JSON.stringify(lerna.packageFolders));
 				this.spinner.info(`Setting up packages ${lerna.packageFolders.join(',')}`).start();
 				const cmd = `lerna bootstrap`;
-				await this.exec(cmd);
+				await this.exec(cmd,{silent:false});
 				this.spinner.succeed('install completed')
 			} catch (e) {
 				this.debug(e);

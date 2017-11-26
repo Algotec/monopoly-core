@@ -78,7 +78,7 @@ export abstract class BaseCommand {
 		return final;
 	}
 
-	async exec(cmd: string | string[], options?: { cwd: string }): Promise<execResult> {
+	async exec(cmd: string | string[], options?: ExecOptions): Promise<execResult> {
 		let retVal: execResult = {code: 0, stdout: '', stderr: ''};
 		if (Array.isArray(cmd)) {
 			const [type, ...args] = cmd;
@@ -97,7 +97,7 @@ export abstract class BaseCommand {
 			this.debug(cmd);
 			try {
 				retVal = await new Promise<execResult>((resolve, reject) => {
-					const shOptions: ExecOptions = {silent: true};
+					const shOptions: ExecOptions = Object.assign({}, options, {silent: true});
 					if (options && options.cwd) {
 						shOptions.cwd = options.cwd;
 					}
@@ -128,6 +128,6 @@ export abstract class BaseCommand {
 		((sh as any).ShellString(content)as any).to(filename);
 	}
 
-	abstract getHandler(...args:any[]): void;
+	abstract getHandler(...args: any[]): void;
 }
 
