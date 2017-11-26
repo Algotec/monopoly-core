@@ -1,7 +1,7 @@
 import * as sh from 'shelljs';
 import {DieHardError, Logger, RepoApiInterface, TasksManagementAPIInterface} from "../types";
 import * as winston from 'winston'; //keep this here for types
-import {cliLogger} from "../lib/logger";
+import {cliLogger, consoleLogger} from "../lib/logger";
 import {ExecOptions, ExecOutputReturnValue} from "shelljs";
 import * as Ora from 'ora';
 import {FileDocument} from "../lib/fileDocument";
@@ -78,7 +78,7 @@ export abstract class BaseCommand {
 		return final;
 	}
 
-	async exec(cmd: string | string[], options?: ExecOptions): Promise<execResult> {
+	async exec(cmd: string | string[], options?: ExecOptions & { progress?: boolean }): Promise<execResult> {
 		let retVal: execResult = {code: 0, stdout: '', stderr: ''};
 		if (Array.isArray(cmd)) {
 			const [type, ...args] = cmd;
@@ -101,7 +101,7 @@ export abstract class BaseCommand {
 					if (options && options.cwd) {
 						shOptions.cwd = options.cwd;
 					}
-					sh.exec(cmd, shOptions, (code: number, stdout: string, stderr: string) => {
+					const childProcess = sh.exec(cmd, shOptions, (code: number, stdout: string, stderr: string) => {
 						if (stderr) {
 							this.debug(stderr);
 						}
@@ -110,10 +110,15 @@ export abstract class BaseCommand {
 						}
 						return resolve({code, stdout, stderr});
 					});
+					if (options && options.progress) {
+						childProcess.stdout.pipe(process.stdout);
+						childProcess.stderr.pipe(process.stderr);
+					}
 				});
 			} catch (e) {
 				retVal.code = e.code || 1;
-				retVal.stderr = e.message;
+				retVal.stdout = e.stdout;
+				retVal.stderr = e.stderr ||e.message;
 				throw new Error(JSON.stringify(retVal));
 			}
 			return retVal;

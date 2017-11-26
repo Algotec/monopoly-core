@@ -17,6 +17,8 @@ export const lernaJsonValue =
 	`
 	{
   "lerna": "2.5.1",
+	"useGitVersion": true,
+  "gitVersionPrefix": "v",
   "packages": [
   ],
   "version": "independent"

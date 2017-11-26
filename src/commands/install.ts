@@ -17,11 +17,21 @@ export class InstallCommand extends BaseCommand {
 				this.debug(JSON.stringify(lerna.packageFolders));
 				this.spinner.info(`Setting up packages ${lerna.packageFolders.join(',')}`).start();
 				const cmd = `lerna bootstrap`;
-				await this.exec(cmd,{silent:false});
+				await this.exec(cmd, {silent: false, progress: true});
 				this.spinner.succeed('install completed')
 			} catch (e) {
-				this.debug(e);
-				this.spinner.fail(JSON.stringify(e));
+				let parsedMessage: any;
+				try {
+					parsedMessage = JSON.parse(e.message)
+				} catch (e) {
+				}
+				let errorMesaage = '';
+				if (parsedMessage && parsedMessage.stderr.indexOf('npm ERR!') > -1) {
+					const startErr = parsedMessage.stderr.indexOf('npm ERR!');
+					const endOfErr = parsedMessage.stderr.indexOf('lerna ERR!', startErr);
+					errorMesaage = parsedMessage.slice(startErr, endOfErr)
+				}
+				this.spinner.fail(errorMesaage);
 				this.error(e.message);
 			}
 		}
