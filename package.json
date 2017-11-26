@@ -16,6 +16,9 @@
   ],
   "author": "Nadav Sinai",
   "license": "MIT",
+  "peerDependencies": {
+    "lerna": "~2.5.1"
+  },
   "devDependencies": {
     "@types/glob": "^5.0.33",
     "@types/node": "^8.0.50",

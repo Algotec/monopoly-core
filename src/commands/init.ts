@@ -35,7 +35,7 @@ export class InitCommand extends BaseCommand {
 				this.outputFile('package.json', packageJsonValue);
 				this.spinner.info('installing workspace dependencies...').start();
 				await this.exec('npm i');
-				await this.exec('lerna init --loglevel=warn');
+				// await this.exec('lerna init --loglevel=warn');
 				await this.commitAll();
 				await this.exec('amp add web-common/web-config');
 				this.spinner.succeed('workspace created!')
