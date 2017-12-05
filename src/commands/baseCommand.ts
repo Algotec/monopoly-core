@@ -1,8 +1,15 @@
+/// <reference types="node"/>
 import * as sh from 'shelljs';
 import {DieHardError, Logger, RepoApiInterface, TasksManagementAPIInterface} from "../types";
 import * as winston from 'winston'; //keep this here for types
 import {cliLogger, consoleLogger} from "../lib/logger";
-import {ExecOptions, ExecOutputReturnValue} from "shelljs";
+import * as child from "child_process";
+
+export interface ExecOptions extends child.ExecOptions {
+	silent?: boolean;
+	async?: boolean;
+}
+
 import * as Ora from 'ora';
 import {FileDocument} from "../lib/fileDocument";
 import * as path from "path";
@@ -118,7 +125,7 @@ export abstract class BaseCommand {
 			} catch (e) {
 				retVal.code = e.code || 1;
 				retVal.stdout = e.stdout;
-				retVal.stderr = e.stderr ||e.message;
+				retVal.stderr = e.stderr || e.message;
 				throw new Error(JSON.stringify(retVal));
 			}
 			return retVal;
