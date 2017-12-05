@@ -1,14 +1,15 @@
 export const gitIgnoreValue =
-`node_modules
+	`node_modules
 .idea
 monopoly.log
 `.trim();
 
+const lernaVersion = "2.5.1";
 export const packageJsonValue =
-`
+	`
 	{
         "devDependencies": {
-                "lerna": "^2.5.1"
+                "lerna": "${lernaVersion}"
         }
 }
 	`.trim();
@@ -16,7 +17,7 @@ export const packageJsonValue =
 export const lernaJsonValue =
 	`
 	{
-  "lerna": "2.5.1",
+  "lerna":"${lernaVersion}",
 	"useGitVersion": true,
   "gitVersionPrefix": "v",
   "packages": [
