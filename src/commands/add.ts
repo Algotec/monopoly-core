@@ -19,30 +19,31 @@ export class AddCommand extends BaseCommand {
 			const {projectRepoNames} = args;
 			const {branch} = options;
 			try {
-				await this.execAll((projectRepoNames.map(async (projectAndRepo: string) => {
-					const [project, repoName] = projectAndRepo.split('/');
-
-					const repoResult = await this.repoApi.getRepo(logger, {organization: project, name: repoName});
-					if (repoResult.status != 'OK' || !repoResult.repo) {
-						return new DieHardError('Could not clone repo, can not get repo URL');
-					}
-					const url = repoResult.repo.url;
-					if (!repoResult.repo.defaultBranch) {
-						return new DieHardError('The repo does not have a branch yet, perhaps a bare repo?');
-					}
-					const defaultBranch = repoResult.repo.defaultBranch.replace('refs/heads/', '');
-					this.spinner.info(chalk.green(`Adding submodule ${repoName} ....`)).start();
-					const cmds = [
-						`git submodule add --force -b ${branch || defaultBranch} ${url} ${repoName}`,
-						async () => {
-							const lerna = await this.getDocument('lerna.json');
-							lerna.content.packages.push(repoName);
-							await lerna.write();
-						},
-						`git commit -am"Add module ${repoName}"`
-					];
-					return await this.execAll(cmds);
-				})));
+				await this.execAll((projectRepoNames.map((projectAndRepo: string) =>
+					async () => {
+						const [project, repoName] = projectAndRepo.split('/');
+						const repoResult = await this.repoApi.getRepo(logger, {organization: project, name: repoName});
+						if (repoResult.status != 'OK' || !repoResult.repo) {
+							return new DieHardError('Could not clone repo, can not get repo URL');
+						}
+						const url = repoResult.repo.url;
+						if (!repoResult.repo.defaultBranch) {
+							return new DieHardError('The repo does not have a branch yet, perhaps a bare repo?');
+						}
+						const defaultBranch = repoResult.repo.defaultBranch.replace('refs/heads/', '');
+						this.spinner.info(chalk.green(`Adding submodule ${repoName} ....`)).start();
+						const cmds = [
+							`git submodule add --force -b ${branch || defaultBranch} ${url} ${repoName}`,
+							async () => {
+								const lerna = await this.getDocument('lerna.json');
+								lerna.content.packages.push(repoName);
+								await lerna.write();
+							},
+							`git commit -am"Add module ${repoName}"`
+						];
+						return await
+							this.execAll(cmds);
+					})));
 				this.spinner.succeed('added successfully! - now run install command');
 			} catch (e) {
 				this.spinner.fail('failed to add !');
