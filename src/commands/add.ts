@@ -19,7 +19,7 @@ export class AddCommand extends BaseCommand {
 			const {projectRepoNames} = args;
 			const {branch} = options;
 			try {
-				await Promise.all(projectRepoNames.map(async (projectAndRepo: string) => {
+				await this.execAll((projectRepoNames.map(async (projectAndRepo: string) => {
 					const [project, repoName] = projectAndRepo.split('/');
 
 					const repoResult = await this.repoApi.getRepo(logger, {organization: project, name: repoName});
@@ -30,7 +30,7 @@ export class AddCommand extends BaseCommand {
 					if (!repoResult.repo.defaultBranch) {
 						return new DieHardError('The repo does not have a branch yet, perhaps a bare repo?');
 					}
-					const defaultBranch = repoResult.repo.defaultBranch.replace('refs/heads/','');
+					const defaultBranch = repoResult.repo.defaultBranch.replace('refs/heads/', '');
 					this.spinner.info(chalk.green(`Adding submodule ${repoName} ....`)).start();
 					const cmds = [
 						`git submodule add --force -b ${branch || defaultBranch} ${url} ${repoName}`,
@@ -42,8 +42,8 @@ export class AddCommand extends BaseCommand {
 						`git commit -am"Add module ${repoName}"`
 					];
 					return await this.execAll(cmds);
-				}));
-				this.spinner.succeed('added successfully! - now run sync command');
+				})));
+				this.spinner.succeed('added successfully! - now run install command');
 			} catch (e) {
 				this.spinner.fail('failed to add !');
 				this.error(e);
