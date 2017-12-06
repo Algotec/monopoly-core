@@ -113,7 +113,7 @@ export default function makeCli(repoApi: RepoApiInterface, tasksApi: TasksManage
 		.action(() => {
 			const cmdpath = path.join(__dirname, 'lib', 'ide-fix.js');
 			generalCommand.debug(cmdpath);
-			generalCommand.exec(`node ${cmdpath}`);
+			generalCommand.exec(`node "${cmdpath}"`);
 		});
 
 	const status = cli.command('status', 'show repositories status')
