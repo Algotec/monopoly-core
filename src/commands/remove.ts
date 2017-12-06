@@ -13,7 +13,7 @@ export class RemoveCommand extends BaseCommand {
 				return;
 			}
 			const {repoNames} = args;
-			await Promise.all(repoNames.map(async (repoName: string) => {
+			await this.execAll(repoNames.map(async (repoName: string) => {
 				this.spinner.info(chalk.green(`Removing submodule ${repoName} ....`)).start();
 				const cmds: cmdsArray = [
 					`git submodule deinit -f ${repoName}`,
