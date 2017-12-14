@@ -83,6 +83,7 @@ export default function makeCli(repoApi: RepoApiInterface, tasksApi: TasksManage
 		.argument('<branch>', 'branch name', /\w+/)
 		.argument('[source]', 'source branch name', /\w+/)
 		.option('-b', 'create new branch')
+		.option('--fallbackToDefault', 'if checkout fails - checkout repository default folder')
 		.action(checkoutCommand.getHandler());
 
 

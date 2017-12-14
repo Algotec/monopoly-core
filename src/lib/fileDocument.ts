@@ -4,17 +4,21 @@ import {promisify} from 'util';
 const fsRead = promisify(fs.readFile);
 const fsWrite = promisify(fs.writeFile);
 
+export interface FileDocumentOptions {
+	parse?: boolean;
+}
+
 export class FileDocument<T = any> {
 	public content: T;
 
-	constructor(public filePath: string) {
+	constructor(public filePath: string, private options: FileDocumentOptions = {parse: true}) {
 
 	}
 
 	read(): Promise<FileDocument> {
 		return fsRead(this.filePath, 'utf8')
 			.then((data) => {
-					this.content = JSON.parse(data);
+					this.content = (this.options.parse) ? JSON.parse(data) : data;
 					return this;
 				}
 			).catch((e: Error) => {
