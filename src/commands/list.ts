@@ -4,6 +4,10 @@ import chalk from "chalk";
 import {BaseCommand} from "./baseCommand";
 import {consoleLogger} from "../lib/logger";
 
+export interface Hash {
+	[key: string]: any;
+}
+
 export interface IListCommandArgs {
 	projectRepoNames: string;
 }
@@ -66,7 +70,7 @@ export class ListCommand extends BaseCommand {
 				const [project, repoName] = this.getProjectRepo(args);
 				const filter: IRepoSearchOpts = {organization: options.project, name: options.name};
 				if (project || repoName) {
-					await this.listBranches(logger,project, repoName, filter.name, options.json);
+					await this.listBranches(logger, project, repoName, filter.name, options.json);
 				} else {
 					await this.listReposAndprojects(filter, options.deps, options.branch, options.json, logger);
 				}
@@ -89,7 +93,17 @@ export class ListCommand extends BaseCommand {
 		if (repoListResult.repoList) {
 			const repoList = repoListResult.repoList;
 			if (json) {
-				consoleLogger.info(JSON.stringify(repoListResult.repoList, null, 4))
+				const repoList = repoListResult.repoList;
+
+				const transformedOutput = repoList.reduce((acc: Hash, organization) => {
+					return {
+						...acc, ...organization.repos.reduce((acc: Hash, repoInfo: repoInfo) => {
+							acc[repoInfo.packageName||repoInfo.name] = repoInfo;
+							return acc;
+						}, {})
+					}
+				}, {});
+				consoleLogger.info(JSON.stringify(transformedOutput, null, 4))
 			} else {
 				for (let project of repoList) {
 					consoleLogger.info(chalk.red(`Project : ${project.organization}`));
@@ -105,7 +119,7 @@ export class ListCommand extends BaseCommand {
 		this.spinner.stop();
 	}
 
-	private async listBranches(logger: Logger,project: string, repoName: string, filter?: string , json?: boolean) {
+	private async listBranches(logger: Logger, project: string, repoName: string, filter?: string, json?: boolean) {
 		if (!json) {
 			this.spinner.info(chalk.red(`listing branches on ${project}${repoName ? `/${repoName}` : ''}`)).start();
 		}
@@ -114,7 +128,7 @@ export class ListCommand extends BaseCommand {
 			consoleLogger.info(JSON.stringify(branchSearchResult.branchList, null, 4))
 		} else {
 			if (branchSearchResult.branchList) {
-				branchSearchResult.branchList.forEach((branchName:string) => {
+				branchSearchResult.branchList.forEach((branchName: string) => {
 					consoleLogger.info(chalk.green(branchName));
 				});
 			}

@@ -5,6 +5,8 @@ export {IRepoSearchOpts} from "../commands/list";
 
 export interface repoInfo {
 	name: string,
+	project:string,
+	packageName?:string,
 	deps?: string[]
 }
 
@@ -15,7 +17,7 @@ export interface RepoListResults extends AsyncResult {
 }
 
 export interface DependenciesSearchResult extends AsyncResult {
-	depsList?: {[key:string]:string};}
+	depsList?: {[key:string]:any};}
 
 export interface BranchListSearchResult extends AsyncResult {
 	branchList?: string[];
