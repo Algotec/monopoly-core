@@ -1,5 +1,7 @@
 #!/usr/bin/env node
-
+// async iterator polyfill for node
+(<any>Symbol).asyncIterator = Symbol.asyncIterator || Symbol.for("Symbol.asyncIterator");
+///
 import {CliTool} from "./types/index";
 import {RepoApiInterface} from "./types/repo.api-interface";
 import {TasksManagementAPIInterface} from "./types/tasks.api-interface";
@@ -20,8 +22,12 @@ import './lib/ide-fix';
 import {cliLogger} from "./lib/logger";
 import * as path from "path";
 import {BaseCommand} from "./commands/baseCommand";
+import {ActivationCommand} from "./commands/activation";
+import {DeactivationCommand} from "./commands/deactivation";
 
 const packageJson = require('../package.json');
+
+
 export default function makeCli(repoApi: RepoApiInterface, tasksApi: TasksManagementAPIInterface): CliTool {
 	BaseCommand.repoApi = repoApi;
 	BaseCommand.taskApi = tasksApi;
@@ -36,6 +42,8 @@ export default function makeCli(repoApi: RepoApiInterface, tasksApi: TasksManage
 	const pullRequestCommand = new PullRequestCommand();
 	const generalCommand = new GeneralCommand();
 	const checkoutCommand = new CheckoutCommand();
+	const activatationCommand = new ActivationCommand();
+	const deactivatationCommand = new DeactivationCommand();
 	const initCommand = new InitCommand();
 
 	const cli = caporal
@@ -69,17 +77,31 @@ export default function makeCli(repoApi: RepoApiInterface, tasksApi: TasksManage
 
 	const addCommand = new AddCommand();
 	cli.command('add', 'add repo(s) to monopoly')
+		.alias('a')
 		.argument('<projectRepoNames...>', 'project & repository name(s)', projectRepoValidator)
 		.option('--branch <branch>', 'branch name')
 		.action(addCommand.getHandler());
 
 
 	cli.command('remove', 'remove repo(s) to monopoly')
+		.alias('rm')
 		.argument('<repoNames...>', 'repository name(s)', /\w+/)
 		.action(removeCommand.getHandler());
 
+	cli.command('activate', 'activate repo(s) in monopoly')
+		.alias('act')
+		.argument('<repoNames...>', 'repository name(s)', /\w+/)
+		.action(activatationCommand.getHandler());
+
+
+	cli.command('deactivate', 'deactivate repo(s) in monopoly')
+		.alias('deact')
+		.argument('<repoNames...>', 'repository name(s)', /\w+/)
+		.action(deactivatationCommand.getHandler());
+
 
 	cli.command('checkout', 'checkout branch for all repo(s)')
+		.alias('ck')
 		.argument('<branch>', 'branch name', /\w+/)
 		.argument('[source]', 'source branch name', /\w+/)
 		.option('-b', 'create new branch')
@@ -88,6 +110,7 @@ export default function makeCli(repoApi: RepoApiInterface, tasksApi: TasksManage
 
 
 	cli.command('update', 'update git for all repo(s)')
+		.alias('u')
 		.argument('<remote>', 'remote name', /\w+/)
 		.argument('<branch>', 'branch name', /\w+/)
 		.option('--rebase', 'use rebase')
@@ -95,12 +118,14 @@ export default function makeCli(repoApi: RepoApiInterface, tasksApi: TasksManage
 
 	const linkCommand = new LinkCommand();
 	cli.command('link', 'link repos dependencies')
+		.alias('l')
 		.option('--install', 'also run npm install')
 		.option('--force-local', 'force link ignoreing different versions')
 		.action(linkCommand.getHandler());
 
 
 	cli.command('install', 'install depe dependencies and link repos')
+		.alias('i')
 		.action(installCommand.getHandler());
 
 

@@ -43,12 +43,28 @@ export enum ShellCommands {
 
 export interface execResult {
 	code: number,
+	message?: string,
 	stdout: string,
 	stderr: string
 };
 export type asyncCommandFn = (...args: any[]) => Promise<any>;
 export type cmdArray = [ShellCommands, string] | [ShellCommands, string, string];
 export type cmdsArray = Array<string | cmdArray | asyncCommandFn>;
+
+export class ExecError extends Error {
+	constructor(e: execResult) {
+		super(e.message || '');
+		this.code = e.code || 1;
+		this.stdout = e.stdout;
+		this.stderr = e.stderr || e.message;
+	}
+
+	stdout: string | undefined;
+	stderr: string | undefined;
+	code: string | number;
+	name: string;
+	message: string;
+}
 
 export abstract class BaseCommand {
 
@@ -83,6 +99,19 @@ export abstract class BaseCommand {
 				})
 		}, Promise.resolve());
 		return final;
+	}
+
+	async * execGenerator(iterable: any[], cmdfn: (value: string) => string) {
+		for (let value of iterable) {
+			const cmd = cmdfn(value);
+			let result;
+			try {
+				result = await this.exec(cmd);
+			} catch (e) {
+				result = e;
+			}
+			yield  [value, result];
+		}
 	}
 
 	async exec(cmd: string | string[], options?: ExecOptions & { progress?: boolean }): Promise<execResult> {
@@ -123,10 +152,7 @@ export abstract class BaseCommand {
 					}
 				});
 			} catch (e) {
-				retVal.code = e.code || 1;
-				retVal.stdout = e.stdout;
-				retVal.stderr = e.stderr || e.message;
-				throw new Error(JSON.stringify(retVal));
+				throw new ExecError(e);
 			}
 			return retVal;
 		}
