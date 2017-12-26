@@ -25,10 +25,10 @@ export interface BranchListSearchResult extends AsyncResult {
 
 export interface RepoInterface {
 	name: string;
-	id: string;
-	organization: string;
+	id?: string;
+	organization?: string;
 	url: string;
-	defaultBranch: string;
+	defaultBranch?: string;
 }
 
 export interface repoResult extends AsyncResult {

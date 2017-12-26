@@ -1,4 +1,4 @@
-import {DieHardError, Logger} from "../types/index";
+import {DieHardError, Logger, repoResult} from "../types/index";
 import {RepoApiInterface} from "../types/repo.api-interface";
 import chalk from "chalk";
 import {isInMonopoly} from "../lib/fs";
@@ -21,28 +21,33 @@ export class AddCommand extends BaseCommand {
 			try {
 				await this.execAll((projectRepoNames.map((projectAndRepo: string) =>
 					async () => {
-						const [project, repoName] = projectAndRepo.split('/');
-						const repoResult = await this.repoApi.getRepo(logger, {organization: project, name: repoName});
-						if (repoResult.status != 'OK' || !repoResult.repo) {
+						const repoResult = await this.getRepoInfo(logger, projectAndRepo);
+						if (repoResult.status != 'OK' || !repoResult.repo || !repoResult.repo.url) {
 							return new DieHardError('Could not clone repo, can not get repo URL');
+						} else {
+							const url = repoResult.repo.url;
+							const name = repoResult.repo.name;
+							let defaultBranch;
+							if (repoResult.repo.defaultBranch) {
+								defaultBranch = repoResult.repo.defaultBranch.replace('refs/heads/', '');
+							}
+							this.spinner.info(chalk.green(`Adding submodule ${name} ....`)).start();
+							let branchArgument;
+							if (branch || defaultBranch) {
+								branchArgument = `-b ${branch || defaultBranch}`
+							}
+							const cmds = [
+								`git submodule add ${branchArgument ? branchArgument : ''} --force ${url} ${name}`,
+								async () => {
+									const lerna = await this.getDocument('lerna.json');
+									lerna.content.packages.push(name);
+									await lerna.write();
+								},
+								`git commit -am"Add module ${name}"`
+							];
+							return await
+								this.execAll(cmds);
 						}
-						const url = repoResult.repo.url;
-						if (!repoResult.repo.defaultBranch) {
-							return new DieHardError('The repo does not have a branch yet, perhaps a bare repo?');
-						}
-						const defaultBranch = repoResult.repo.defaultBranch.replace('refs/heads/', '');
-						this.spinner.info(chalk.green(`Adding submodule ${repoName} ....`)).start();
-						const cmds = [
-							`git submodule add --force -b ${branch || defaultBranch} ${url} ${repoName}`,
-							async () => {
-								const lerna = await this.getDocument('lerna.json');
-								lerna.content.packages.push(repoName);
-								await lerna.write();
-							},
-							`git commit -am"Add module ${repoName}"`
-						];
-						return await
-							this.execAll(cmds);
 					})));
 				this.spinner.succeed('added successfully! - now run install command');
 			} catch (e) {
@@ -53,5 +58,29 @@ export class AddCommand extends BaseCommand {
 				this.spinner.stop();
 			}
 		}
+	}
+
+	private async getRepoInfo(logger: Logger, projectAndRepo: string): Promise<repoResult> {
+		let repoResult: repoResult = {status: "ERROR"};
+		if (projectAndRepo.indexOf('://') !== -1) { //absolute url
+			const branchIndex = projectAndRepo.lastIndexOf('#');
+
+			repoResult = {
+				status: 'OK', repo: {
+					url: projectAndRepo.slice(0, branchIndex > -1 ? branchIndex : projectAndRepo.length),
+					name:
+						projectAndRepo.slice(projectAndRepo.lastIndexOf('/') + 1,
+							branchIndex > -1 ? branchIndex : projectAndRepo.length)
+				}
+			};
+			if (branchIndex > -1) {
+				(repoResult.repo  as any).defaultBranch = projectAndRepo.slice(branchIndex + 1);
+			}
+			console.log(JSON.stringify(repoResult, null, 4));
+		} else {
+			const [project, repoName] = projectAndRepo.split('/');
+			repoResult = await this.repoApi.getRepo(logger, {organization: project, name: repoName});
+		}
+		return repoResult;
 	}
 }
