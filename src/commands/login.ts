@@ -19,6 +19,7 @@ export class LoginCommand extends BaseCommand {
 		try {
 			if (process.env.AMP_USER && process.env.AMP_PASSWORD) {
 				credentials = {username: process.env.AMP_USER as string, password: process.env.AMP_PASSWORD as string}
+				console.warn('Using environment credentials!')
 			} else {
 				credentials = await loginPrompt.getFromKeychain(usernameFromOS);
 			}
