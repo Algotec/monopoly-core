@@ -8,7 +8,7 @@ const loginPrompt = clortho.forService(SERVICE_NAME);
 import * as username from 'username'
 import {cliLogger} from "../lib/logger";
 
-const usernameFromOS = username.sync().toLowerCase();
+const usernameFromOS = process.env.AMP_USER ? process.env.AMP_USER as string : username.sync().toLowerCase();
 
 export class LoginCommand extends BaseCommand {
 	loginCommandWorking: boolean = false;
@@ -17,7 +17,11 @@ export class LoginCommand extends BaseCommand {
 	async getCredentials() {
 		let credentials: Credentials = {username: '', password: ''};
 		try {
-			credentials = await loginPrompt.getFromKeychain(usernameFromOS);
+			if (process.env.AMP_USER && process.env.AMP_PASSWORD) {
+				credentials = {username: process.env.AMP_USER as string, password: process.env.AMP_PASSWORD as string}
+			} else {
+				credentials = await loginPrompt.getFromKeychain(usernameFromOS);
+			}
 		}
 		catch (e) {
 			this.debug('did not get credentials from OS');
@@ -43,13 +47,13 @@ export class LoginCommand extends BaseCommand {
 			const credentials = await loginPrompt.prompt(usernameFromOS, 'Please login to Monopoly', true);
 			const {username, password} = credentials;
 			try {
-				const sucess = await loginPrompt.saveToKeychain(username, password);
-				if (!sucess) {
-					throw new Error('no success saving to OS keychain');
+				const success = await loginPrompt.saveToKeychain(username, password);
+				if (!success) {
+					throw new Error('could not save credentials to OS keychain');
 				}
 			} catch (e) {
 				this.debug(e);
-				this.warn('could not save credentials to OS keychain');
+				this.warn(e.message);
 			}
 		}
 	}
