@@ -93,8 +93,6 @@ export class ListCommand extends BaseCommand {
 		if (repoListResult.repoList) {
 			const repoList = repoListResult.repoList;
 			if (json) {
-				const repoList = repoListResult.repoList;
-
 				const transformedOutput = repoList.reduce((acc: Hash, organization) => {
 					return {
 						...acc, ...organization.repos.reduce((acc: Hash, repoInfo: repoInfo) => {
