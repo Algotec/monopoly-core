@@ -1,8 +1,8 @@
 import {DieHardError, Logger, repoResult} from "../types/index";
-import {RepoApiInterface} from "../types/repo.api-interface";
 import chalk from "chalk";
 import {isInMonopoly} from "../lib/fs";
 import {BaseCommand} from "./baseCommand";
+import * as path from "path";
 
 export const projectRepoValidator = /\w+\/\w+/g;
 
@@ -40,8 +40,13 @@ export class AddCommand extends BaseCommand {
 								`git submodule add ${branchArgument ? branchArgument : ''} --force ${url} ${name}`,
 								async () => {
 									const lerna = await this.getDocument('lerna.json');
-									lerna.content.packages.push(name);
+									const publishDir = await this.checkForPublishDir(name);
+									lerna.content.packages.push(publishDir ? `${name}/${publishDir}` : name);
 									await lerna.write();
+									if (publishDir) {
+										this.spinner.info(chalk.green(`running pre build for submodule ${name} ....`)).start();
+										await this.runNpmInstall(name);
+									}
 								},
 								`git commit -am"Add module ${name}"`
 							];
@@ -82,5 +87,19 @@ export class AddCommand extends BaseCommand {
 			repoResult = await this.repoApi.getRepo(logger, {organization: project, name: repoName});
 		}
 		return repoResult;
+	}
+
+	private async checkForPublishDir(name: string) {
+		try {
+			const packageJson = await this.getDocument(path.join(name, 'package.json'));
+			return packageJson.content.publishDir;
+		}
+		catch (e) {
+			this.debug('could not get package.json to check publishDir');
+		}
+	}
+
+	private async runNpmInstall(name: string) {
+		return this.exec('npm install', {cwd: name, progress: true});
 	}
 }
