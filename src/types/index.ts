@@ -1,9 +1,10 @@
 import {cliLogger} from "../lib/logger";
+import chalk from 'chalk';
 
 export * from "./repo.api-interface";
 export * from "./tasks.api-interface";
 export * from "./package.types";
-import chalk from 'chalk';
+import caporal = require("caporal");
 
 export interface Logger {
 	debug(str: string): void;
@@ -47,4 +48,10 @@ export interface AsyncResult {
 
 export interface CliTool {
 	parse(args: typeof process.argv): void;
+
+	command: typeof caporal.command;
 }
+
+export type ActionCallback = (args: any,
+	options: any,
+	logger: Logger) => void | Promise<void>;

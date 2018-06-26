@@ -1,18 +1,17 @@
 /// <reference types="node"/>
 import * as sh from 'shelljs';
-import {DieHardError, Logger, RepoApiInterface, TasksManagementAPIInterface} from "../types";
-import * as winston from 'winston'; //keep this here for types
-import {cliLogger, consoleLogger} from "../lib/logger";
+import {Logger, RepoApiInterface, TasksManagementAPIInterface} from "../types";
+import {cliLogger} from "../lib/logger";
 import * as child from "child_process";
+import * as Ora from 'ora';
+import {FileDocument} from "../lib/fileDocument";
+import * as path from "path";
+import winston = require('winston');
 
 export interface ExecOptions extends child.ExecOptions {
 	silent?: boolean;
 	async?: boolean;
 }
-
-import * as Ora from 'ora';
-import {FileDocument} from "../lib/fileDocument";
-import * as path from "path";
 
 export type Color = 'black' | 'red' | 'green' | 'yellow' | 'blue' | 'magenta' | 'cyan' | 'white' | 'gray';
 
@@ -66,7 +65,7 @@ export class ExecError extends Error {
 	message: string;
 }
 
-export abstract class BaseCommand {
+export abstract class BaseCommand<ARGS = any, OPTS = any> {
 
 	constructor() {
 		this.repoApi = BaseCommand.repoApi;
@@ -101,7 +100,7 @@ export abstract class BaseCommand {
 		return final;
 	}
 
-	async * execGenerator(iterable: any[], cmdfn: (value: string) => string) {
+	async* execGenerator(iterable: any[], cmdfn: (value: string) => string) {
 		for (let value of iterable) {
 			const cmd = cmdfn(value);
 			let result;
@@ -166,6 +165,6 @@ export abstract class BaseCommand {
 		((sh as any).ShellString(content)as any).to(filename);
 	}
 
-	abstract getHandler(...args: any[]): void;
+	abstract getHandler(...args: any[]): (args: ARGS, options: OPTS, logger: Logger) => void | Promise<void>;
 }
 

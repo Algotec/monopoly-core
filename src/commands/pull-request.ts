@@ -1,5 +1,5 @@
 import {asyncCommandFn, BaseCommand, execResult} from "./baseCommand";
-import {Logger, RepoApiInterface, TasksManagementAPIInterface} from "../types";
+import {ActionCallback, Logger, RepoApiInterface, TasksManagementAPIInterface} from "../types";
 import {LernaUtil} from "../lib/lerna-util";
 import {isInMonopoly} from "../lib/fs";
 
@@ -11,7 +11,7 @@ const updated = require('lerna/lib/commands/UpdatedCommand');
 export type lernaUpdatedType = { name: string, version: string, private: boolean }[];
 
 export class PullRequestCommand extends BaseCommand {
-	getHandler() {
+	getHandler(): ActionCallback {
 		return async (args: PRArgs, options: { [p: string]: any }, logger: Logger) => {
 			isInMonopoly();
 			this.spinner.info('fetching issue from Jira').start();

@@ -1,4 +1,4 @@
-import {DieHardError, Logger, repoInfo} from "../types/index";
+import {ActionCallback, DieHardError, Logger, repoInfo} from "../types/index";
 import {RepoApiInterface} from "../types/repo.api-interface";
 import chalk from "chalk";
 import {BaseCommand} from "./baseCommand";
@@ -63,7 +63,7 @@ export class ListCommand extends BaseCommand {
 		}
 	}
 
-	getHandler() {
+	getHandler(): ActionCallback {
 		return async (args: IListCommandArgs, options: IListCommandOptions, logger: Logger) => {
 			this.debug(`${this.constructor.name} handler args: ${JSON.stringify(args)} + options :${JSON.stringify(options)}`);
 			try {
@@ -75,7 +75,7 @@ export class ListCommand extends BaseCommand {
 					await this.listReposAndprojects(filter, options.deps, options.branch, options.json, logger);
 				}
 			} catch (e) {
-				return new DieHardError('unable to list repositories, check connection: ' + e)
+				throw new DieHardError('unable to list repositories, check connection: ' + e)
 			}
 		};
 	}
@@ -96,7 +96,7 @@ export class ListCommand extends BaseCommand {
 				const transformedOutput = repoList.reduce((acc: Hash, organization) => {
 					return {
 						...acc, ...organization.repos.reduce((acc: Hash, repoInfo: repoInfo) => {
-							acc[repoInfo.packageName||repoInfo.name] = repoInfo;
+							acc[repoInfo.packageName || repoInfo.name] = repoInfo;
 							return acc;
 						}, {})
 					}
