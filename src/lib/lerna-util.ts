@@ -6,9 +6,10 @@ import * as glob from "glob";
 import {lernaJsonType, PackageInfo} from "../types/package.types";
 
 
+
 export class LernaUtil {
-	private lernaJson: FileDocument<lernaJsonType>;
-	public packageFolders: string[];
+	private lernaJson!: FileDocument<lernaJsonType>;
+	public packageFolders!: string[];
 
 	async parse(pathToLerna: string) {
 		this.lernaJson = await new FileDocument<lernaJsonType>(pathToLerna).read();
@@ -18,14 +19,16 @@ export class LernaUtil {
 	}
 
 	get packages() {
-		this.selfCheck();
-		return this.lernaJson.content.packages;
+		if (this.selfCheck(this.lernaJson)) {
+			return this.lernaJson.content!.packages;
+
+		} else
+			throw new Error('lerna json not yet parsed')
+
 	}
 
-	private selfCheck() {
-		if (!this.lernaJson) {
-			throw new Error('lerna json not yet parsed')
-		}
+	private selfCheck(file: FileDocument): file is FileDocument<lernaJsonType> {
+		return (file && file.content);
 	}
 
 	private async get_packageFolders() {

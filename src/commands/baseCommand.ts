@@ -53,6 +53,7 @@ export type cmdsArray = Array<string | cmdArray | asyncCommandFn>;
 export class ExecError extends Error {
 	constructor(e: execResult) {
 		super(e.message || '');
+		this.message = e.message || '';
 		this.code = e.code || 1;
 		this.stdout = e.stdout;
 		this.stderr = e.stderr || e.message;
@@ -61,7 +62,6 @@ export class ExecError extends Error {
 	stdout: string | undefined;
 	stderr: string | undefined;
 	code: string | number;
-	name: string;
 	message: string;
 }
 

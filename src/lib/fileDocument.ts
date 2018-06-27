@@ -9,10 +9,9 @@ export interface FileDocumentOptions {
 }
 
 export class FileDocument<T = any> {
-	public content: T;
+	public content: T | null = null;
 
 	constructor(public filePath: string, private options: FileDocumentOptions = {parse: true}) {
-
 	}
 
 	read(): Promise<FileDocument> {

@@ -23,7 +23,8 @@ import * as path from "path";
 import {BaseCommand} from "./commands/baseCommand";
 import {ActivationCommand} from "./commands/activation";
 import {DeactivationCommand} from "./commands/deactivation";
-import caporal = require("caporal");
+import * as caporal from "caporal";
+import './commands/publish';
 
 const packageJson = require('../package.json');
 
