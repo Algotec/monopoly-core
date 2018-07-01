@@ -40,8 +40,11 @@ export class AddCommand extends BaseCommand {
 								`git submodule add ${branchArgument ? branchArgument : ''} --force ${url} ${name}`,
 								async () => {
 									const lerna = await this.getDocument('lerna.json');
+									lerna.content.packages.push(name);
 									const publishDir = await this.checkForPublishDir(name);
-									lerna.content.packages.push(publishDir ? `${name}/${publishDir}` : name);
+									if (publishDir) {
+										lerna.content.packages.push(`${name}/${publishDir}`);
+									}
 									await lerna.write();
 									if (publishDir) {
 										this.spinner.info(chalk.green(`running pre build for submodule ${name} ....`)).start();
