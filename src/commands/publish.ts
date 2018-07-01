@@ -31,6 +31,7 @@ export class PublishCommand extends BaseCommand {
 		return async (args: publishArgs, options: Partial<publishOptions>, logger: Logger) => {
 			this.spinner.start('starting prerequisite checks...');
 			const gitStatus = await this.exec('git status --porcelain');
+			let monopolyExtraConfig;
 			if (gitStatus.stdout.length) {
 				this.debug(`gitstatus output : ${gitStatus.stdout}`);
 				this.error('could not publish if working tree is not clean, commit changes first');
@@ -100,12 +101,14 @@ export class PublishCommand extends BaseCommand {
 				cmds.push('git push --follow-tags');
 			}
 			if (!options.noPublish) {
+
 				const basePublish = ['npm publish'];
 				try {
 					const packageJson = await new FileDocument('package.json').read();
 					if (packageJson.content!.publishDir) {
 						basePublish.push(packageJson.content!.publishDir);
 					}
+					monopolyExtraConfig = packageJson.content.monopoly;
 				} catch (e) {
 					this.spinner.fail(`could not read & parse package.json`);
 					throw new DieHardError(e.message);
@@ -117,6 +120,21 @@ export class PublishCommand extends BaseCommand {
 			}
 			try {
 				await this.execAll(cmds);
+				let extraRemote: string | string[] | undefined = (monopolyExtraConfig && monopolyExtraConfig.publish && monopolyExtraConfig.publish.postPublishDeploy) ? monopolyExtraConfig.publish.postPublishDeploy : undefined;
+				if (extraRemote) {
+					if (!Array.isArray(extraRemote)) {
+						extraRemote = [extraRemote];
+					}
+					extraRemote.forEach(async (remote) => {
+						try {
+							this.spinner.info(`updating  :${remote}...`);
+							await this.exec(`git push ${remote}`);
+							this.spinner.info(`remote :${remote} updated`);
+						} catch (e) {
+							this.warn(`failed to deploy to ${remote}`);
+						}
+					});
+				}
 				this.spinner.succeed('publish done!');
 			} catch (e) {
 				this.spinner.fail('publish command failed');
