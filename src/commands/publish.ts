@@ -37,7 +37,7 @@ export class PublishCommand extends BaseCommand {
 				throw new DieHardError('working tree dirty');
 			}
 			const gitRemoteDiff = await this.exec('git rev-list --count --left-only @{u}...HEAD');
-			if (gitRemoteDiff.stdout.trim() !== '0') {
+			if (parseInt(gitRemoteDiff.stdout.trim()) !== 0) {
 				this.debug(`git rev-list output : ${gitRemoteDiff.stdout}`);
 				this.error('Remote history differs. Please pull changes.');
 				throw new DieHardError('remote more updated');
