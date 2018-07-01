@@ -1,12 +1,11 @@
 import {BaseCommand} from "./baseCommand";
 import {DieHardError, Logger} from "../types";
-import {promisify} from 'util';
 import * as shell from 'shelljs';
 import {FileDocument} from '../lib/fileDocument';
 
 export type NPMPreValidatedVersions = 'major' | 'minor' | 'patch' | 'premajor' | 'preminor' | 'prepatch' | 'prerelease' | 'from-git'
 
-const standardVersion = promisify(require("standard-version"));
+const standardVersion = require("standard-version")
 
 import * as caporal from "caporal";
 
@@ -86,9 +85,9 @@ export class PublishCommand extends BaseCommand {
 			if (options.prerelease) {
 				standardArgs.prerelease = options.prerelease;
 			}
-			this.spinner.start('bumping version and updating changelog');
+			this.spinner.start('bumping version and updating changelog via standardVersion');
 			try {
-				await standardVersion(standardArgs);
+				await this.standardVersionWrapper(standardArgs);
 				this.spinner.info('bumping version done');
 			}
 			catch (err) {
@@ -140,6 +139,18 @@ export class PublishCommand extends BaseCommand {
 				this.spinner.fail('publish command failed');
 			}
 		}
+	}
+
+	private standardVersionWrapper(standardArgs: any) {
+		return new Promise((resolve, reject) => {
+			standardVersion(standardArgs, (err:Error) => {
+				if (err) {
+					reject(err);
+				} else {
+					resolve();
+				}
+			});
+		});
 	}
 }
 

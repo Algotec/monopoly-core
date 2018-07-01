@@ -4,8 +4,6 @@ import {isInMonopoly} from "../lib/fs";
 import {BaseCommand} from "./baseCommand";
 import * as path from "path";
 
-export const projectRepoValidator = /\w+\/\w+/g;
-
 export class AddCommand extends BaseCommand {
 
 	getHandler() {

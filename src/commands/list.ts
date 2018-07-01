@@ -1,22 +1,10 @@
 import {ActionCallback, DieHardError, Logger, repoInfo} from "../types/index";
-import {RepoApiInterface} from "../types/repo.api-interface";
 import chalk from "chalk";
 import {BaseCommand} from "./baseCommand";
 import {consoleLogger} from "../lib/logger";
+import * as caporal from "caporal";
+import {Hash, projectRepoValidator} from "../lib/general";
 
-export interface Hash {
-	[key: string]: any;
-}
-
-export interface IListCommandArgs {
-	projectRepoNames: string;
-}
-
-export interface IDepsListArgs {
-	branch?: string;
-	deps?: string;
-	json?: boolean
-}
 
 export interface IListCommandOptions {
 	name?: string;
@@ -31,46 +19,35 @@ export interface IRepoSearchOpts {
 	name?: string
 }
 
-export interface IBranchSearchOpts {
-	name: string
-}
 
 export class ListCommand extends BaseCommand {
 
-	listDepsHandler() {
-		return async (args: IListCommandArgs, options: IDepsListArgs, logger: Logger) => {
-			this.debug(`${this.constructor.name + '/listDpes'} handler args: ${JSON.stringify(args)} + options :${JSON.stringify(options)}`);
-			const [project, repoName] = this.getProjectRepo(args);
-			if (project && repoName) {
-				if (!options.json) {
-					this.spinner.info(chalk.red(`listing dependencies on ${project}${repoName ? `/${repoName}` : ''}`)).start();
-				}
-				const depsSearchResult = await this.repoApi.listDependencies(logger, project, repoName, options.branch, options.deps);
-				if (options.json) {
-					consoleLogger.info(JSON.stringify(depsSearchResult.depsList, null, 4))
-				} else {
-					if (depsSearchResult.depsList) {
-						consoleLogger.info('');
-						Object.entries(depsSearchResult.depsList).forEach(([depName, version]) => {
-							consoleLogger.info(`${chalk.green(depName)} : ${chalk.magenta(version)}`);
-						});
-					}
-				}
-				this.spinner.stop();
-			} else {
-				this.error('must include project and repo for list deps command');
+	async listProjectDeps(logger: Logger, project: string, repoName: string, options: IListCommandOptions) {
+		if (!options.json) {
+			this.spinner.info(chalk.red(`listing dependencies on ${project}${repoName ? `/${repoName}` : ''}`)).start();
+		}
+		const depsSearchResult = await this.repoApi.listDependencies(logger, project, repoName, options.branch, options.deps as string);
+		if (options.json) {
+			consoleLogger.info(JSON.stringify(depsSearchResult.depsList, null, 4))
+		} else {
+			if (depsSearchResult.depsList) {
+				consoleLogger.info('');
+				Object.entries(depsSearchResult.depsList).forEach(([depName, version]) => {
+					consoleLogger.info(`${chalk.green(depName)} : ${chalk.magenta(version.toString())}`);
+				});
 			}
 		}
+		this.spinner.stop();
 	}
 
 	getHandler(): ActionCallback {
-		return async (args: IListCommandArgs, options: IListCommandOptions, logger: Logger) => {
+		return async (args: Hash, options: IListCommandOptions, logger: Logger) => {
 			this.debug(`${this.constructor.name} handler args: ${JSON.stringify(args)} + options :${JSON.stringify(options)}`);
 			try {
 				const [project, repoName] = this.getProjectRepo(args);
 				const filter: IRepoSearchOpts = {organization: options.project, name: options.name};
-				if (project || repoName) {
-					await this.listBranches(logger, project, repoName, filter.name, options.json);
+				if (project && repoName) {
+					await this.listProjectDeps(logger, project, repoName, options);
 				} else {
 					await this.listReposAndprojects(filter, options.deps, options.branch, options.json, logger);
 				}
@@ -78,11 +55,6 @@ export class ListCommand extends BaseCommand {
 				throw new DieHardError('unable to list repositories, check connection: ' + e)
 			}
 		};
-	}
-
-	private getProjectRepo(args: IListCommandArgs) {
-		const {projectRepoNames} = args;
-		return (projectRepoNames || '').split('/');
 	}
 
 	private async listReposAndprojects(filter: IRepoSearchOpts, dependencies: IListCommandOptions["deps"], branch: string | undefined, json: boolean | undefined, logger: Logger) {
@@ -117,21 +89,14 @@ export class ListCommand extends BaseCommand {
 		this.spinner.stop();
 	}
 
-	private async listBranches(logger: Logger, project: string, repoName: string, filter?: string, json?: boolean) {
-		if (!json) {
-			this.spinner.info(chalk.red(`listing branches on ${project}${repoName ? `/${repoName}` : ''}`)).start();
-		}
-		const branchSearchResult = await this.repoApi.listBranches(logger, project, repoName, filter);
-		if (json) {
-			consoleLogger.info(JSON.stringify(branchSearchResult.branchList, null, 4))
-		} else {
-			if (branchSearchResult.branchList) {
-				branchSearchResult.branchList.forEach((branchName: string) => {
-					consoleLogger.info(chalk.green(branchName));
-				});
-			}
-		}
-		this.spinner.stop();
-	}
 }
 
+const listCommand = new ListCommand();
+caporal.command('list', 'list repositories or branches in repo')
+	.argument('[projectRepoNames]', 'project & repository name - causes branch search', projectRepoValidator)
+	.option('--json', 'format output as json')
+	.option('--deps [depsName]', 'list project dependencies -> also possible to filter by depName')
+	.option('--branch <branchName>', 'relevant to project dependencies -> which branch to check')
+	.option('--project <projectFilter>', 'filter by project name')
+	.option('--name <nameFilter>', 'filter by repository name')
+	.action(listCommand.getHandler() as ActionCallback);

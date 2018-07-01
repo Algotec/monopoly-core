@@ -157,6 +157,11 @@ export abstract class BaseCommand<ARGS = any, OPTS = any> {
 		}
 	}
 
+	protected getProjectRepo(args: Partial<{ projectRepoNames: string }>) {
+		const {projectRepoNames} = args;
+		return (projectRepoNames || '').split('/');
+	}
+
 	getDocument(filename: string): Promise<FileDocument> {
 		return new FileDocument(path.resolve(filename)).read();
 	}

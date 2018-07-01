@@ -3,7 +3,7 @@ import {Logger} from "../types";
 import {LernaUtil} from "../lib/lerna-util";
 import * as path from "path";
 import {ShowOrFixPackageVersoins} from "../lib/version";
-
+import * as cli from 'caporal';
 export interface versionOptions {
 	fix?: boolean;
 }
@@ -28,3 +28,7 @@ export class VersionCommand extends BaseCommand {
 	}
 
 }
+cli.command('status', 'show repositories status')
+	.alias('versions')
+	.option('--fix', 'fix dependencies versions')
+	.action(new VersionCommand().getHandler());
