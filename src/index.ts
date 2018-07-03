@@ -4,7 +4,8 @@ import {projectRepoValidator} from "./lib/general";
 
 (<any>Symbol).asyncIterator = Symbol.asyncIterator || Symbol.for("Symbol.asyncIterator");
 ///
-import {CliTool, Logger, ActionCallback} from "./types/index";
+import {CliTool, Logger, ActionCallback, IPackageInfo} from "./types/index";
+export * from './types/index';
 import {RepoApiInterface} from "./types/repo.api-interface";
 import {TasksManagementAPIInterface} from "./types/tasks.api-interface";
 import {AddCommand} from "./commands/add";
@@ -27,7 +28,6 @@ import * as caporal from "caporal";
 
 
 const packageJson = require('../package.json');
-
 export {BaseCommand} from "./commands/baseCommand";
 export {consoleLogger} from "./lib/logger";
 export default function makeCli(repoApi: RepoApiInterface, tasksApi: TasksManagementAPIInterface): CliTool {

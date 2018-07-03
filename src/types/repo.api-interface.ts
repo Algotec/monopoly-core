@@ -1,13 +1,23 @@
 import {AsyncResult, Logger, SingleValueResult} from "./index";
 import {IRepoSearchOpts} from "../commands/list";
+import {Hash} from "../lib/general";
 
 export {IRepoSearchOpts} from "../commands/list";
 
-export interface repoInfo {
+export interface DepInfo {
+	[key: string]: string;
+}
+
+export interface IPackageInfo {
+	packageName?: string,
+	deps?: DepInfo
+	devDeps?: DepInfo
+	peerDeps?: DepInfo
+}
+
+export interface repoInfo extends IPackageInfo {
 	name: string,
-	project:string,
-	packageName?:string,
-	deps?: string[]
+	project: string,
 }
 
 export type repoList = { organization: string, repos: repoInfo[] }[];
@@ -16,8 +26,15 @@ export interface RepoListResults extends AsyncResult {
 	repoList?: repoList;
 }
 
+export enum dependencyTypes {
+	deps = 'deps',
+	devDeps = 'devDeps',
+	peerDeps = 'peerDeps'
+};
+
 export interface DependenciesSearchResult extends AsyncResult {
-	depsList?: {[key:string]:any};}
+	depsList?: repoInfo
+}
 
 export interface BranchListSearchResult extends AsyncResult {
 	branchList?: string[];
@@ -51,7 +68,7 @@ export interface RepoApiInterface {
 
 	listBranches(logger: Logger, project: string, repoName: string, filter?: string): Promise<BranchListSearchResult>;
 
-	listDependencies(logger: Logger, project: string, repoName: string, branch?: string,dependenciesFilter?:string): Promise<DependenciesSearchResult>;
+	listDependencies(logger: Logger, project: string, repoName: string, branch?: string, dependenciesFilter?: string): Promise<DependenciesSearchResult>;
 
 	getRepo(logger: Logger, filter: { name?: string, organization?: string }): Promise<repoResult>;
 

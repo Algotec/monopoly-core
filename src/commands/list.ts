@@ -1,9 +1,9 @@
-import {ActionCallback, DieHardError, Logger, repoInfo} from "../types/index";
+import {ActionCallback, dependencyTypes, DieHardError, Logger, repoInfo} from "../types/index";
 import chalk from "chalk";
 import {BaseCommand} from "./baseCommand";
 import {consoleLogger} from "../lib/logger";
 import * as caporal from "caporal";
-import {Hash, projectRepoValidator} from "../lib/general";
+import {getJointDependencies, hasDependencies, Hash, projectRepoValidator} from "../lib/general";
 
 
 export interface IListCommandOptions {
@@ -65,7 +65,7 @@ export class ListCommand extends BaseCommand {
 		if (repoListResult.repoList) {
 			const repoList = repoListResult.repoList;
 			if (json) {
-				const transformedOutput = repoList.reduce((acc: Hash, organization) => {
+				let transformedOutput = repoList.reduce((acc: Hash, organization) => {
 					return {
 						...acc, ...organization.repos.reduce((acc: Hash, repoInfo: repoInfo) => {
 							acc[repoInfo.packageName || repoInfo.name] = repoInfo;
@@ -73,14 +73,26 @@ export class ListCommand extends BaseCommand {
 						}, {})
 					}
 				}, {});
+				if (dependencies) {
+					transformedOutput = Object.entries(transformedOutput).reduce((acc: Hash, [repoName, repoInfo]) => {
+						if (hasDependencies(repoInfo as repoInfo)) {
+							acc[repoName] = repoInfo;
+						}
+						return acc;
+					}, {})
+				}
 				consoleLogger.info(JSON.stringify(transformedOutput, null, 4))
 			} else {
 				for (let project of repoList) {
 					consoleLogger.info(chalk.red(`Project : ${project.organization}`));
 					project.repos.forEach((repo: repoInfo) => {
-						consoleLogger.info(chalk.green(`    ${repo.name}`));
-						if (dependencies && repo.deps && repo.deps.length) {
-							consoleLogger.info(chalk.yellow(`	|----->  ${repo.deps.join(',')}`));
+						if (dependencies) {
+							if (hasDependencies(repo as repoInfo)) {
+								consoleLogger.info(chalk.green(`    ${repo.name}`));
+								consoleLogger.info(chalk.yellow(`	|----->  ${getJointDependencies(repo).join(',')}`));
+							}
+						} else {
+							consoleLogger.info(chalk.green(`    ${repo.name}`));
 						}
 					});
 				}
