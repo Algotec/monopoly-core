@@ -1,6 +1,7 @@
 import {BaseCommand} from "./baseCommand";
 import {Logger} from "../types";
 import * as clortho from 'clortho';
+import * as cli from 'caporal';
 
 export type Credentials = clortho.Credentials;
 export const SERVICE_NAME = 'monopoly';
@@ -18,7 +19,7 @@ export class LoginCommand extends BaseCommand {
 		let credentials: Credentials = {username: '', password: ''};
 		try {
 			if (process.env.AMP_USER && process.env.AMP_PASSWORD) {
-				credentials = {username: process.env.AMP_USER as string, password: process.env.AMP_PASSWORD as string}
+				credentials = {username: process.env.AMP_USER as string, password: process.env.AMP_PASSWORD as string};
 				console.warn('Using environment credentials!')
 			} else {
 				credentials = await loginPrompt.getFromKeychain(usernameFromOS);
@@ -58,5 +59,14 @@ export class LoginCommand extends BaseCommand {
 			}
 		}
 	}
-
 }
+
+const loginCommand = new LoginCommand();
+
+export async function doLogin() {
+	await loginCommand.getCredentials();
+	return await loginCommand.repoApi.connect();
+}
+
+cli.command('login', 'stores username and password for repo access').action(loginCommand.getHandler());
+cli.command('logout', 'removes username and password storage').action(loginCommand.logOutHandler);

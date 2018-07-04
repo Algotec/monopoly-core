@@ -3,6 +3,7 @@ import {isInGitFolder} from "../lib/fs";
 import * as sh from 'shelljs';
 import {gitIgnoreValue, lernaJsonValue, packageJsonValue} from "./data/init.data";
 import {BaseCommand} from "./baseCommand";
+import * as caporal from 'caporal';
 
 export class InitCommand extends BaseCommand {
 	async checkAndInstallGloabls() {
@@ -53,3 +54,9 @@ export class InitCommand extends BaseCommand {
 		await this.exec(`git commit -am"${message}"`);
 	}
 }
+
+const initCommand = new InitCommand();
+caporal.command('init', 'init a new monopoly workspace at current folder')
+	.argument('[folder]', 'folder to create  - defaults to current folder', caporal.STRING, '.')
+	.action(initCommand.getHandler());
+

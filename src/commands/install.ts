@@ -3,7 +3,7 @@ import {Logger} from "../types";
 import * as path from "path";
 import {LernaUtil} from "../lib/lerna-util";
 
-
+import * as cli from 'caporal';
 export interface installOptions {
 }
 
@@ -37,3 +37,8 @@ export class InstallCommand extends BaseCommand {
 		}
 	}
 }
+
+const installCommand = new InstallCommand();
+cli.command('install', 'install depe dependencies and link repos')
+	.alias('i')
+	.action(installCommand.getHandler() as ActionCallback);

@@ -3,6 +3,7 @@ import {Logger} from "../types";
 import {LernaUtil} from "../lib/lerna-util";
 import * as path from "path";
 import {FileDocument} from "../lib/fileDocument";
+import * as cli from 'caporal';
 
 export interface checkoutArgs {
 	branch: string
@@ -16,7 +17,7 @@ export interface checkoutOptions {
 
 export class CheckoutCommand extends BaseCommand {
 	getHandler() {
-		return async (args: checkoutArgs, options: checkoutOptions, logger: Logger) => {
+		return async (args: Partial<checkoutArgs>, options: Partial<checkoutOptions>, logger: Logger) => {
 			this.debug(`${this.constructor.name} handler args: ${JSON.stringify(args)} + options :${JSON.stringify(options)}`);
 			let lerna;
 			try {
@@ -61,3 +62,12 @@ export class CheckoutCommand extends BaseCommand {
 
 	}
 }
+const checkoutCommand = new CheckoutCommand();
+cli.command('checkout', 'checkout branch for all repo(s)')
+	.alias('ck')
+	.argument('<branch>', 'branch name', /\w+/)
+	.argument('[source]', 'source branch name', /\w+/)
+	.option('-b', 'create new branch')
+	.option('--fallbackToDefault', 'if checkout fails - checkout repository default folder')
+	.action(checkoutCommand.getHandler() as ActionCallback);
+

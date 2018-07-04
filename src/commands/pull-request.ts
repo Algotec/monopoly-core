@@ -2,7 +2,7 @@ import {asyncCommandFn, BaseCommand, execResult} from "./baseCommand";
 import {ActionCallback, Logger, RepoApiInterface, TasksManagementAPIInterface} from "../types";
 import {LernaUtil} from "../lib/lerna-util";
 import {isInMonopoly} from "../lib/fs";
-
+import * as cli from 'caporal';
 export interface PRArgs {
 	taskId: string
 }
@@ -74,3 +74,8 @@ export class PullRequestCommand extends BaseCommand {
 	}
 
 }
+const pullRequestCommand = new PullRequestCommand();
+cli.command('pull-request', 'create a Pull-request in all repos taking title and description from a task #')
+	.alias('pr')
+	.argument('<taskID>', 'the ID of the task from which to take the title and description')
+	.action(pullRequestCommand.getHandler() as ActionCallback);

@@ -64,6 +64,8 @@ export interface OpenPRResult extends AsyncResult {
 export interface RepoApiInterface {
 	setCredentials(username: string, password: string): void;
 
+	connect():Promise<boolean>
+
 	list(logger: Logger, filter: { name?: string, organization?: string }, branch: string | undefined, dependencies?: string | boolean): Promise<RepoListResults>;
 
 	listBranches(logger: Logger, project: string, repoName: string, filter?: string): Promise<BranchListSearchResult>;

@@ -3,6 +3,8 @@ import chalk from "chalk";
 import {isInMonopoly} from "../lib/fs";
 import {BaseCommand} from "./baseCommand";
 import * as path from "path";
+import * as cli from 'caporal';
+import {projectRepoValidator} from "../lib/general";
 
 export class AddCommand extends BaseCommand {
 
@@ -104,3 +106,9 @@ export class AddCommand extends BaseCommand {
 		return this.exec('npm install', {cwd: name, progress: true});
 	}
 }
+const addCommand = new AddCommand();
+cli.command('add', 'add repo(s) to monopoly')
+	.alias('a')
+	.argument('<projectRepoNames...>', 'project & repository name(s)', projectRepoValidator)
+	.option('--branch <branch>', 'branch name')
+	.action(addCommand.getHandler() as  ActionCallback);

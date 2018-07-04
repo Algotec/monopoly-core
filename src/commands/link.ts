@@ -2,10 +2,10 @@ import {BaseCommand} from "./baseCommand";
 import {Logger} from "../types";
 import * as path from "path";
 import {LernaUtil} from "../lib/lerna-util";
-
+import * as cli from 'caporal';
 
 export interface linkOptions {
-	forceLocal: boolean
+	forceLocal?: boolean
 }
 
 
@@ -28,3 +28,9 @@ export class LinkCommand extends BaseCommand {
 		}
 	}
 }
+const linkCommand = new LinkCommand();
+cli.command('link', 'link repos dependencies')
+	.alias('l')
+	.option('--install', 'also run npm install')
+	.option('--force-local', 'force link ignoreing different versions')
+	.action(linkCommand.getHandler() as ActionCallback);

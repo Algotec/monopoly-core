@@ -1,7 +1,8 @@
 import {BaseCommand} from "./baseCommand";
 import {Logger} from "../types";
+import * as cli from 'caporal';
 
-export interface updatetArgs {
+export interface updateArgs {
 	remote: string
 	branch: string;
 }
@@ -13,7 +14,7 @@ export interface updatetOptions {
 
 export class UpdateCommand extends BaseCommand {
 	getHandler() {
-		return async (args: updatetArgs, options: any, logger: Logger) => {
+		return async (args: updateArgs, options: Partial<updatetOptions>, logger: Logger) => {
 			try {
 				this.debug(`${this.constructor.name} handler args: ${JSON.stringify(args)} + options :${JSON.stringify(options)}`);
 				this.spinner.start(`Updating git from  ${args.branch}`);
@@ -28,3 +29,12 @@ export class UpdateCommand extends BaseCommand {
 		}
 	}
 }
+
+const updateCommand = new UpdateCommand();
+
+cli.command('update', 'update git for all repo(s)')
+	.alias('u')
+	.argument('<remote>', 'remote name', /\w+/)
+	.argument('<branch>', 'branch name', /\w+/)
+	.option('--rebase', 'use rebase')
+	.action(updateCommand.getHandler() as any);

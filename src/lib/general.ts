@@ -1,4 +1,5 @@
 import {dependencyTypes, repoInfo} from "../types";
+import {statSync} from "fs";
 
 export const projectRepoValidator = /\w+\/\w+/g;
 
@@ -31,4 +32,10 @@ export function getJointDependencies(repoInfo: repoInfo): string[] {
 		}
 	}
 	return acc;
+}
+
+const jsReg = /\w*.js$/;
+
+export function onlyJSFile(fileName: string) {
+	return statSync(fileName).isFile() && jsReg.test(fileName)
 }

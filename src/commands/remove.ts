@@ -3,6 +3,7 @@ import {RepoApiInterface} from "../types/repo.api-interface";
 import chalk from "chalk";
 import {isInMonopoly} from "../lib/fs";
 import {BaseCommand, cmdsArray, ShellCommands} from "./baseCommand";
+import * as cli from 'caporal';
 
 export class RemoveCommand extends BaseCommand {
 	getHandler() {
@@ -40,3 +41,9 @@ export class RemoveCommand extends BaseCommand {
 		}
 	}
 }
+
+const removeCommand = new RemoveCommand();
+cli.command('remove', 'remove repo(s) to monopoly')
+	.alias('rm')
+	.argument('<repoNames...>', 'repository name(s)', /\w+/)
+	.action(removeCommand.getHandler() as ActionCallback);
