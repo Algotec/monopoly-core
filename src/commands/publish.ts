@@ -2,10 +2,11 @@ import {BaseCommand} from "./baseCommand";
 import {DieHardError, Logger} from "../types";
 import * as shell from 'shelljs';
 import {FileDocument} from '../lib/fileDocument';
+import {promisify} from "util";
 
 export type NPMPreValidatedVersions = 'major' | 'minor' | 'patch' | 'premajor' | 'preminor' | 'prepatch' | 'prerelease' | 'from-git'
 
-const standardVersion = require("standard-version")
+const standardVersion = promisify(require("standard-version"));
 
 import * as caporal from "caporal";
 
@@ -16,6 +17,7 @@ export interface publishArgs {
 export interface publishOptions {
 	prerelease: string;
 	distTag: string;
+	canary: boolean;
 	noBump: boolean;
 	noPush: boolean;
 	noPublish: boolean;
@@ -29,6 +31,14 @@ export class PublishCommand extends BaseCommand {
 	getHandler() {
 		return async (args: publishArgs, options: Partial<publishOptions>, logger: Logger) => {
 			this.spinner.start('starting prerequisite checks...');
+			let packageJson: any;
+			try {
+				packageJson = await new FileDocument('package.json').read();
+
+			} catch (e) {
+				this.spinner.fail(`could not read & parse package.json`);
+				throw new DieHardError(e.message);
+			}
 			const gitStatus = await this.exec('git status --porcelain');
 			let monopolyExtraConfig;
 			if (gitStatus.stdout.length) {
@@ -68,26 +78,35 @@ export class PublishCommand extends BaseCommand {
 				}
 			}
 			if (!options.noTests) {
-				this.spinner.start('running tests');
+				this.spinner.info('running tests');
 				const retVal = await this.exec('npm t', {progress: true});
 				if (retVal.code) {
 					this.spinner.fail('Tests failed');
 					throw new DieHardError('tests failed, stopping publish');
 				}
 			}
-			const standardArgs: any = {dryRun: options.dryRun};
-			if (args.version) {
+			const standardArgs: any = {dryRun: options.dryRun, silent: true};
+			if (options.canary) {
+				// const versionBase = packageJson.version;
+				const branch = (await this.exec(` git symbolic-ref -q --short HEAD`)).stdout;
+				const sha = (await this.exec(`  git rev-parse --short HEAD`)).stdout;
+				standardArgs.skip = {bump: true, changelog: true};
+				standardArgs.prerelease = `${branch}_${sha}`;
+			} else if (args.version) {
 				standardArgs.releaseAs = args.version;
-			}
-			if (options.noBump) {
-				standardArgs.skip = {bump: true};
-			}
-			if (options.prerelease) {
+			} else if (options.prerelease) {
 				standardArgs.prerelease = options.prerelease;
 			}
-			this.spinner.start('bumping version and updating changelog via standardVersion');
+
+			if (options.noBump) {
+				standardArgs.skip = standardArgs.skip || {};
+				standardArgs.skip.bump = true;
+			}
+
+			this.spinner.info('bumping version and updating changelog via standardVersion');
 			try {
-				await this.standardVersionWrapper(standardArgs);
+				await
+					standardVersion(standardArgs);
 				this.spinner.info('bumping version done');
 			}
 			catch (err) {
@@ -102,23 +121,19 @@ export class PublishCommand extends BaseCommand {
 			if (!options.noPublish) {
 
 				const basePublish = ['npm publish'];
-				try {
-					const packageJson = await new FileDocument('package.json').read();
-					if (packageJson.content!.publishDir) {
-						basePublish.push(packageJson.content!.publishDir);
-					}
-					monopolyExtraConfig = packageJson.content.monopoly;
-				} catch (e) {
-					this.spinner.fail(`could not read & parse package.json`);
-					throw new DieHardError(e.message);
+				if (packageJson.content!.publishDir) {
+					basePublish.push(packageJson.content!.publishDir);
 				}
+				monopolyExtraConfig = packageJson.content.monopoly;
+
 				if (options.distTag) {
 					basePublish.push(`--tag ${options.distTag}`);
 				}
 				cmds.push(basePublish.join((' ')));
 			}
 			try {
-				await this.execAll(cmds);
+				await
+					this.execAll(cmds);
 				let extraRemote: string | string[] | undefined = (monopolyExtraConfig && monopolyExtraConfig.publish && monopolyExtraConfig.publish.postPublishDeploy) ? monopolyExtraConfig.publish.postPublishDeploy : undefined;
 				if (extraRemote) {
 					if (!Array.isArray(extraRemote)) {
@@ -141,17 +156,6 @@ export class PublishCommand extends BaseCommand {
 		}
 	}
 
-	private standardVersionWrapper(standardArgs: any) {
-		return new Promise((resolve, reject) => {
-			standardVersion(standardArgs, (err:Error) => {
-				if (err) {
-					reject(err);
-				} else {
-					resolve();
-				}
-			});
-		});
-	}
 }
 
 caporal.command('publish', 'publishes the package in current folder')
@@ -159,6 +163,7 @@ caporal.command('publish', 'publishes the package in current folder')
 	.option('--prerelease <prerelease>', 'makes a prerelease such as 1.0.0-beta.0 where beta is the option you can change here')
 	.option('--distTag <distTag>', '')
 	.option('--noBump', 'do not bump version, use existing')
+	.option('--canary', 'use git branch and sha as pre-release-version and dist tag')
 	.option('--noPush', 'do not push to origin')
 	.option('--noPublish', 'do not publish to npm registry')
 	.option('--noClean', 'do not clean node_modules and re-install')
