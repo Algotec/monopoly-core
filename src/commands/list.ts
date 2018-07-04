@@ -1,7 +1,7 @@
 import {ActionCallback, dependencyTypes, DieHardError, Logger, repoInfo} from "../types/index";
 import chalk from "chalk";
 import {BaseCommand} from "./baseCommand";
-import {consoleLogger} from "../lib/logger";
+import {cliLogger, consoleLogger} from "../lib/logger";
 import * as caporal from "caporal";
 import {getJointDependencies, hasDependencies, Hash, projectRepoValidator} from "../lib/general";
 
@@ -104,7 +104,8 @@ export class ListCommand extends BaseCommand {
 }
 
 const listCommand = new ListCommand();
-caporal.command('list', 'list repositories or branches in repo')
+caporal
+	.command('list', 'list repositories or branches in repo')
 	.argument('[projectRepoNames]', 'project & repository name - causes branch search', projectRepoValidator)
 	.option('--json', 'format output as json')
 	.option('--deps [depsName]', 'list project dependencies -> also possible to filter by depName')

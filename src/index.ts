@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 // async iterator polyfill for node
-import {projectRepoValidator} from "./lib/general";
-
 (<any>Symbol).asyncIterator = Symbol.asyncIterator || Symbol.for("Symbol.asyncIterator");
-///
-import {CliTool, Logger, ActionCallback, IPackageInfo} from "./types/index";
-export * from './types/index';
-import {RepoApiInterface} from "./types/repo.api-interface";
-import {TasksManagementAPIInterface} from "./types/tasks.api-interface";
+
+import {projectRepoValidator} from "./lib/general";
+import './lib/ide-fix';
+import {cliLogger} from "./lib/logger";
+import * as path from "path";
+
+import {ActionCallback, CliTool, TasksManagementAPIInterface, RepoApiInterface, ICliOptions} from "./types/index";
+
 import {AddCommand} from "./commands/add";
 import {InitCommand} from "./commands/init";
 import {RemoveCommand} from "./commands/remove";
@@ -18,21 +19,27 @@ import {LoginCommand} from "./commands/login";
 import {GeneralCommand} from "./commands/general";
 import {InstallCommand} from "./commands/install";
 import {PullRequestCommand} from "./commands/pull-request";
-import './lib/ide-fix';
-import {cliLogger} from "./lib/logger";
-import * as path from "path";
+
 import {BaseCommand} from "./commands/baseCommand";
 import {ActivationCommand} from "./commands/activation";
 import {DeactivationCommand} from "./commands/deactivation";
 import * as caporal from "caporal";
 
+//exports
+export * from './types/index';
+
 
 const packageJson = require('../package.json');
 export {BaseCommand} from "./commands/baseCommand";
 export {consoleLogger} from "./lib/logger";
-export default function makeCli(repoApi: RepoApiInterface, tasksApi: TasksManagementAPIInterface): CliTool {
+export default function makeCli(repoApi: RepoApiInterface, tasksApi: TasksManagementAPIInterface, cliOptions: Partial<ICliOptions> = {}): CliTool {
 	BaseCommand.repoApi = repoApi;
 	BaseCommand.taskApi = tasksApi;
+	const cli = caporal
+		.name(cliOptions.name || 'monopoly CLI')
+		.logger(cliOptions.logger || cliLogger as any)
+		.description(cliOptions.description || 'Monopoly based CLI')
+		.version(cliOptions.version || packageJson.version);
 
 	require('./commands/publish');
 	require('./commands/version');
@@ -53,9 +60,7 @@ export default function makeCli(repoApi: RepoApiInterface, tasksApi: TasksManage
 	const deactivatationCommand = new DeactivationCommand();
 	const initCommand = new InitCommand();
 
-	const cli = caporal
-		.logger(cliLogger as any)
-		.version(packageJson.version);
+
 
 	cli.command('login', 'stores username and password for repo access')
 		.action(loginCommand.getHandler());

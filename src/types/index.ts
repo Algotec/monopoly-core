@@ -55,3 +55,10 @@ export interface CliTool {
 export type ActionCallback = (args: any,
 	options: any,
 	logger: Logger) => void | Promise<void>;
+
+export interface ICliOptions {
+	version: string;
+	logger: Logger;
+	name: string;
+	description: string;
+}
