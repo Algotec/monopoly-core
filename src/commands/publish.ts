@@ -21,7 +21,7 @@ export interface publishOptions {
 	noPublish: boolean;
 	noClean: boolean;
 	noTests: boolean;
-	stupid: boolean;
+	naive: boolean;
 	dryRun: boolean;
 }
 
@@ -43,7 +43,7 @@ export class PublishCommand extends BaseCommand {
 				throw new DieHardError('remote more updated');
 			}
 			const cmds = [];
-			if (options.stupid) {
+			if (options.naive) {
 				options.noClean = true;
 				options.noTests = true;
 			}
@@ -163,6 +163,6 @@ caporal.command('publish', 'publishes the package in current folder')
 	.option('--noPublish', 'do not publish to npm registry')
 	.option('--noClean', 'do not clean node_modules and re-install')
 	.option('--noTests', 'do not run tests prior to publishing')
-	.option('--stupid', 'sets both noTests and noClean')
+	.option('--naive', 'sets both noTests and noClean')
 	.option('--dryRun', 'sets both noPublish and noPush and does a dry-run for the bump (no files actually modified)')
 	.action(new PublishCommand().getHandler());
