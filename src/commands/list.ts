@@ -68,7 +68,7 @@ export class ListCommand extends BaseCommand {
 				let transformedOutput = repoList.reduce((acc: Hash, organization) => {
 					return {
 						...acc, ...organization.repos.reduce((acc: Hash, repoInfo: repoInfo) => {
-							acc[repoInfo.packageName || repoInfo.name] = repoInfo;
+							acc[repoInfo.name] = repoInfo;
 							return acc;
 						}, {})
 					}
@@ -96,9 +96,9 @@ export class ListCommand extends BaseCommand {
 						}
 					});
 				}
+				this.spinner.stop();
 			}
 		}
-		this.spinner.stop();
 	}
 
 }
