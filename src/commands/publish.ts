@@ -1,7 +1,9 @@
 import {BaseCommand} from "./baseCommand";
-import {DieHardError, Logger} from "../types";
+import {Logger} from "../types";
 import * as shell from 'shelljs';
 import * as caporal from "caporal";
+import {FileDocument} from "../lib/fileDocument";
+import * as path from "path";
 
 const standardVersion = require("standard-version");
 
@@ -17,6 +19,7 @@ export interface publishOptions {
 	distTag: string;
 	canary: boolean;
 	noBump: boolean;
+	noBuild: boolean;
 	noPush: boolean;
 	noPublish: boolean;
 	noClean: boolean;
@@ -40,13 +43,11 @@ export class PublishCommand extends BaseCommand {
 				}
 				this.spinner.start(`going to unpublish ${tagName} tag and ${distTag} version`);
 				try {
-					await this.exec(`npm unpublish ${packageJson.name}@${distTag}`);
-					await this.exec(`git tag -d ${tagName}`);
-					await this.exec(`git push --delete origin refs/tags/${tagName}`);
+					await this.exec(`npm unpublish ${packageJson.name}@${distTag}`, {progress: true});
+					await this.exec(`git tag -d ${tagName}`, {progress: true});
+					await this.exec(`git push --delete origin refs/tags/${tagName}`, {progress: true});
 				} catch (e) {
-					this.spinner.fail('unpublish failed');
-					this.debug(e);
-					throw new DieHardError(e.error);
+					this.fatalErrorHandler(e, 'unpublish failed');
 				}
 				this.spinner.succeed('version unpublished');
 			} else {
@@ -59,26 +60,20 @@ export class PublishCommand extends BaseCommand {
 		return async (args: publishArgs, options: Partial<publishOptions>, logger: Logger) => {
 			this.spinner.start('starting prerequisite checks...');
 			const packageJson = await this.getPackageJSON();
+			const monopolyExtraConfig = packageJson.config && packageJson.config.monopoly ? packageJson.config.monopoly : undefined;
 			const gitStatus = await this.exec('git status --porcelain');
 			if (gitStatus.stdout.length) {
-				this.debug(`gitstatus output : ${gitStatus.stdout}`);
-				this.error('could not publish if working tree is not clean, commit changes first');
-				throw new DieHardError('working tree dirty');
+				this.fatalErrorHandler(gitStatus.stdout, 'could not publish if working tree is not clean, commit changes first')
 			}
 			let gitRemoteDiff;
 			try {
 				gitRemoteDiff = await this.exec('git rev-list --count --left-only @{u}...HEAD');
 			} catch (e) { // todo: refactor DRY
-				this.debug(`git rev-list failed`);
-				this.error('Remote history differs. Please pull changes.');
-				throw new DieHardError('remote more updated');
+				this.fatalErrorHandler(`git rev-list failed`, 'Remote history differs. Please pull changes.')
 			}
-			if (gitRemoteDiff && gitRemoteDiff.stderr.length > 0 || parseInt(gitRemoteDiff.stdout.trim()) !== 0) {
-				this.debug(`git rev-list output : ${gitRemoteDiff.stdout}`);
-				this.error('Remote history differs. Please pull changes.');
-				throw new DieHardError('remote more updated');
+			if (gitRemoteDiff && gitRemoteDiff.stderr.length > 0 || gitRemoteDiff && parseInt(gitRemoteDiff.stdout.trim()) !== 0) {
+				this.fatalErrorHandler(`git rev-list failed :  ${gitRemoteDiff.stdout}`, 'Remote history differs. Please pull changes.')
 			}
-			const cmds = [];
 			if (options.naive) {
 				options.noClean = true;
 				options.noTests = true;
@@ -92,23 +87,20 @@ export class PublishCommand extends BaseCommand {
 					this.spinner.info('cleaning node_modules');
 					shell.rm('-rf', 'node_modules');
 				} catch (e) {
-					this.spinner.fail('cleaning node_modules failed!');
-					throw new DieHardError(e.error);
+					this.fatalErrorHandler(e, 'cleaning node_modules failed!')
 				}
 				try {
 					this.spinner.info('running npm clean install');
 					await this.exec('npm i', {progress: true});
 				} catch (e) {
-					this.spinner.fail('npm install failed');
-					throw new DieHardError(e.error);
+					this.fatalErrorHandler(e, 'npm install failed');
 				}
 			}
 			if (!options.noTests) {
 				this.spinner.info('running tests');
 				const retVal = await this.exec('npm t', {progress: true});
 				if (retVal.code) {
-					this.spinner.fail('Tests failed');
-					throw new DieHardError('tests failed, stopping publish');
+					this.fatalErrorHandler(`Tests failed with exit code : ${retVal.code}`, 'tests failed, stopping publish');
 				}
 			}
 			const standardArgs: any = {dryRun: options.dryRun, silent: !process.env.AMP_DEBUG};
@@ -119,10 +111,9 @@ export class PublishCommand extends BaseCommand {
 				this.spinner.info(`starting canary release for distTag ${options.distTag}`);
 				const tagName = this.getCanaryTagName(versionBase, branch, sha);
 				try {
-					await this.exec(`git tag -a ${tagName} -m"canary release for version ${versionBase} in branch ${branch}"`);
+					await this.exec(`git tag -a ${tagName} -m"canary release for version ${versionBase} in branch ${branch}"`, {progress: true});
 				} catch (e) {
-					this.spinner.fail('Tests failed');
-					throw new DieHardError('git tag failed, stopping publish');
+					this.fatalErrorHandler('tag failed', 'git tag failed, stopping publish');
 				}
 			} else {
 				if (args.version) {
@@ -142,29 +133,44 @@ export class PublishCommand extends BaseCommand {
 					this.spinner.info(`standardVersion work done`);
 				}
 				catch (err) {
-					this.debug(err);
-					this.spinner.fail(`standardVersion failed!`);
-					throw new DieHardError(err.error);
+					this.fatalErrorHandler(err, `standardVersion failed!`);
+				}
+			}
+			if (monopolyExtraConfig.build && !options.noBuild) {
+				this.spinner.info(`building via custom scripts : ${monopolyExtraConfig.build}`);
+				try {
+					await this.exec(monopolyExtraConfig.build, {progress: true});
+				} catch (err) {
+					this.fatalErrorHandler(err, `custom build failed!`);
 				}
 			}
 			if (!options.noPush) {
 				this.spinner.info('pushing into origin');
-				cmds.push('git push --follow-tags');
+				try {
+					await this.exec('git push --follow-tags', {progress: true});
+				} catch (err) {
+					this.fatalErrorHandler(err, `git push failed!`);
+				}
 			}
 			if (!options.noPublish) {
+				this.spinner.info('publishing into npm registry');
 				const basePublish = ['npm publish'];
-				if (packageJson.publishDir) {
-					basePublish.push(packageJson.publishDir);
-				}
 				if (options.distTag) {
 					basePublish.push(`--tag ${options.distTag}`);
 				}
-				cmds.push(basePublish.join((' ')));
-			}
-			try {
-				await this.execAll(cmds);
+				let pjsonPath = path.join(process.cwd(), 'package.json');
+				if (packageJson.publishDir) {
+					basePublish.push(packageJson.publishDir);
+					pjsonPath = path.join(process.cwd(), packageJson.publishDir, 'package.json');
+				}
+				const publishedVersion = await this.getPjsonVersion(pjsonPath);
+				try {
+					await this.exec(basePublish.join(' '), {progress: true});
+					logger.log(`####$$$$ {version:${publishedVersion},distTag:${options.distTag}`)
+				} catch (e) {
+					this.spinner.fail('publish command failed');
+				}
 				if (!options.noDeploy) {
-					const monopolyExtraConfig = packageJson.config && packageJson.config.monopoly ? packageJson.config.monopoly : undefined;
 					let extraRemote: string | string[] | undefined = (monopolyExtraConfig && monopolyExtraConfig.publish && monopolyExtraConfig.publish.postPublishDeploy) ? monopolyExtraConfig.publish.postPublishDeploy : undefined;
 					if (extraRemote) {
 						if (!Array.isArray(extraRemote)) {
@@ -183,9 +189,16 @@ export class PublishCommand extends BaseCommand {
 					}
 				}
 				this.spinner.succeed('publish done!');
-			} catch (e) {
-				this.spinner.fail('publish command failed');
 			}
+		}
+	}
+
+	private async getPjsonVersion(pjsonPath: string): Promise<string> {
+		try {
+			const pJsonPublished = (await new FileDocument(pjsonPath).read()).content;
+			return pJsonPublished.version;
+		} catch (e) {
+			return this.fatalErrorHandler(e, 'could not read build package.json version');
 		}
 	}
 
@@ -216,8 +229,9 @@ caporal.command('publish', 'publishes the package in current folder')
 	.option('--noPush', 'do not push to origin')
 	.option('--noPublish', 'do not publish to npm registry')
 	.option('--noClean', 'do not clean node_modules and re-install')
+	.option('--noBuild', 'do not run custom build command (set via config in package.json)')
 	.option('--noTests', 'do not run tests prior to publishing')
-	.option('--noDeploy', 'do not run deployment push to additional remotes')
+	.option('--noDeploy', 'do not run deployment push to additional remotes (set via config in package.json)')
 	.option('--naive', 'sets both noTests and noClean')
 	.option('--dryRun', 'sets both noPublish and noPush and does a dry-run for the bump (no files actually modified)')
 	.action(publishCommand.getHandler());

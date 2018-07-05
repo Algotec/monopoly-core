@@ -174,6 +174,12 @@ export abstract class BaseCommand<ARGS = any, OPTS = any> {
 		return packageJson;
 	}
 
+	protected fatalErrorHandler(e: any, message?: string): never {
+		this.spinner.fail(message);
+		this.debug(e);
+		throw new DieHardError(e.error);
+	}
+
 	getDocument(filename: string): Promise<FileDocument> {
 		return new FileDocument(path.resolve(filename)).read();
 	}
