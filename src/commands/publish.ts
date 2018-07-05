@@ -174,7 +174,7 @@ export class PublishCommand extends BaseCommand {
 					${JSON.stringify(publishMeta, null, 4)}
 					####$$$$`)
 				} catch (e) {
-					this.spinner.fail('publish command failed');
+					this.fatalErrorHandler(e,'publish command failed');
 				}
 				if (!options.noDeploy) {
 					let extraRemote: string | string[] | undefined = (monopolyExtraConfig && monopolyExtraConfig.publish && monopolyExtraConfig.publish.postPublishDeploy) ? monopolyExtraConfig.publish.postPublishDeploy : undefined;

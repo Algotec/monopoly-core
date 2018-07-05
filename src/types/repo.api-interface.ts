@@ -60,11 +60,15 @@ export interface OpenPRResult extends AsyncResult {
 		[key: string]: any;
 	}
 }
+export interface AffectedResult extends AsyncResult {
+	affected?:boolean;
+}
 
+export type PackageDesc = [string, string] // packageName,version
 export interface RepoApiInterface {
 	setCredentials(username: string, password: string): void;
 
-	connect():Promise<boolean>
+	connect(): Promise<boolean>
 
 	list(logger: Logger, filter: { name?: string, organization?: string }, branch: string | undefined, dependencies?: string | boolean): Promise<RepoListResults>;
 
@@ -75,6 +79,8 @@ export interface RepoApiInterface {
 	getRepo(logger: Logger, filter: { name?: string, organization?: string }): Promise<repoResult>;
 
 	openPR(logger: Logger, repoURL: string, sourceBranch: string, taregtBranch: string, title: string, description?: string): Promise<OpenPRResult>;
+
+	affectedByPackage?(logger: Logger, packageDesc: PackageDesc, project: string, repoName: string, branch?: string): Promise<AffectedResult>
 }
 
 
