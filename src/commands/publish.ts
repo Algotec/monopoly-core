@@ -166,7 +166,13 @@ export class PublishCommand extends BaseCommand {
 				const publishedVersion = await this.getPjsonVersion(pjsonPath);
 				try {
 					await this.exec(basePublish.join(' '), {progress: true});
-					logger.log(`####$$$$ {version:${publishedVersion},distTag:${options.distTag}`)
+					const publishMeta: any = {version: publishedVersion};
+					if (options.distTag) {
+						publishMeta.distTag = options.distTag;
+					}
+					logger.log(` published metadata : ####$$$$ 
+					${JSON.stringify(publishMeta, null, 4)}
+					####$$$$`)
 				} catch (e) {
 					this.spinner.fail('publish command failed');
 				}
