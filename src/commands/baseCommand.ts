@@ -1,6 +1,6 @@
 /// <reference types="node"/>
 import * as sh from 'shelljs';
-import {Logger, RepoApiInterface, TasksManagementAPIInterface} from "../types";
+import {DieHardError, Logger, RepoApiInterface, TasksManagementAPIInterface} from "../types";
 import {cliLogger} from "../lib/logger";
 import * as child from "child_process";
 import * as Ora from 'ora';
@@ -160,6 +160,18 @@ export abstract class BaseCommand<ARGS = any, OPTS = any> {
 	protected getProjectRepo(args: Partial<{ projectRepoNames: string }>) {
 		const {projectRepoNames} = args;
 		return (projectRepoNames || '').split('/');
+	}
+
+	protected async getPackageJSON() {
+		let packageJson: any;
+		try {
+			packageJson = (await new FileDocument('package.json').read()).content;
+
+		} catch (e) {
+			this.spinner.fail(`could not read & parse package.json`);
+			throw new DieHardError(e.message);
+		}
+		return packageJson;
 	}
 
 	getDocument(filename: string): Promise<FileDocument> {
