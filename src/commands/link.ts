@@ -18,10 +18,11 @@ export interface linkOptions {
 export class LinkCommand extends BaseCommand {
 	getHandler() {
 		return async (args: linkArguments, options: linkOptions, logger: Logger) => {
+			let restorePJSONVersionMap: Map<PackageInfo, string> = new Map();
 			try {
 				this.debug(`${this.constructor.name} handler args: ${JSON.stringify(args)}, options :${JSON.stringify(options)}`);
 				let lerna = await (new LernaUtil().parse(path.join(process.cwd(), 'lerna.json')));
-				let restorePJSONVersionMap: Map<PackageInfo, string> = new Map();
+
 				let packageInfos = await lerna.packageInfo();
 				if (options && options.b || (args && args.packages && args.packages.length)) {
 					const originalPackages = [...packageInfos];
@@ -50,14 +51,7 @@ export class LinkCommand extends BaseCommand {
 				this.spinner.info(`Cross-Linking packages ${packageNames.join(',')}`).start();
 				const cmd = `lerna link ${(options.forceLocal) ? '--force-local' : ''}`;
 				await this.exec(cmd);
-				if (restorePJSONVersionMap.size) {
-					restorePJSONVersionMap.forEach(async (oldVersion, packageInfo: PackageInfo) => {
-						const pJsonPath = packageInfo.filename;
-						const pJson = await new FileDocument(pJsonPath).read();
-						pJson.content.version = oldVersion;
-						await pJson.write();
-					});
-				}
+
 				this.spinner.succeed('link completed')
 			}
 			catch
@@ -65,6 +59,21 @@ export class LinkCommand extends BaseCommand {
 				this.debug(e);
 				this.spinner.fail(JSON.stringify(e));
 				this.error(e.message);
+			}
+			finally {
+				if (restorePJSONVersionMap.size) {
+					restorePJSONVersionMap.forEach(async (oldVersion, packageInfo: PackageInfo) => {
+						const pJsonPath = packageInfo.filename;
+						try {
+							const pJson = await new FileDocument(pJsonPath).read();
+							pJson.content.version = oldVersion;
+							await pJson.write();
+						} catch (e) {
+							this.debug(e);
+							this.warn('could not restore package.json for package ' + packageInfo.name)
+						}
+					});
+				}
 			}
 		}
 	}
