@@ -26,7 +26,7 @@ export class FileDocument<T = any> {
 	}
 
 	write(): Promise<FileDocument> {
-		return fsWrite(this.filePath, JSON.stringify(this.content))
+		return fsWrite(this.filePath, JSON.stringify(this.content,null,4))
 			.then((data: any) => {return this;}
 			)
 	}

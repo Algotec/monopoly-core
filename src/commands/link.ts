@@ -1,26 +1,67 @@
 import {BaseCommand} from "./baseCommand";
-import {Logger} from "../types";
+import {Logger, PackageInfo} from "../types";
 import * as path from "path";
 import {LernaUtil} from "../lib/lerna-util";
 import * as cli from 'caporal';
+import {FileDocument} from "../lib/fileDocument";
+
+export interface linkArguments {
+	packages?: string[];
+}
 
 export interface linkOptions {
-	forceLocal?: boolean
+	forceLocal?: boolean;
+	b: string; //blacklist comma separated string
 }
 
 
 export class LinkCommand extends BaseCommand {
 	getHandler() {
-		return async (args: object, options: linkOptions, logger: Logger) => {
+		return async (args: linkArguments, options: linkOptions, logger: Logger) => {
 			try {
 				this.debug(`${this.constructor.name} handler args: ${JSON.stringify(args)}, options :${JSON.stringify(options)}`);
 				let lerna = await (new LernaUtil().parse(path.join(process.cwd(), 'lerna.json')));
-				this.debug(JSON.stringify(lerna.packageFolders));
-				this.spinner.info(`Cross-Linking packages ${lerna.packageFolders.join(',')}`).start();
+				let restorePJSONVersionMap: Map<PackageInfo, string> = new Map();
+				let packageInfos = await lerna.packageInfo();
+				if (options && options.b || (args && args.packages && args.packages.length)) {
+					const originalPackages = [...packageInfos];
+					const blackList = options.b.split(',');
+					if (blackList && blackList.length) {
+						packageInfos = packageInfos.filter(packageInfo => blackList.indexOf(packageInfo.name) === -1 && blackList.indexOf(packageInfo.folder) === -1);
+					}
+					if (Array.isArray(args.packages) && args.packages.length) {
+						const pakagesWhitelist = args.packages;
+						packageInfos = packageInfos.filter(packageInfo => pakagesWhitelist.indexOf(packageInfo.name) !== -1 || pakagesWhitelist.indexOf(packageInfo.folder) !== -1);
+					}
+					const packagesNotIncluded = originalPackages.filter(packageInfo => !packageInfos.find(pinfo => pinfo.name === packageInfo.name))
+					if (packagesNotIncluded.length) {
+						packagesNotIncluded.forEach(async packageInfo => {
+							const pJsonPath = packageInfo.filename;
+							const pJson = await new FileDocument(pJsonPath).read();
+							restorePJSONVersionMap.set(packageInfo, pJson.content.version);
+							pJson.content.version = `0.0.0-temp.${pJson.content.version}`;
+							await pJson.write();
+						});
+					}
+					this.debug('packages not included :' + JSON.stringify(LernaUtil.packageInfoToPackageName(packagesNotIncluded), null, 4));
+				}
+				const packageNames = LernaUtil.packageInfoToPackageName(packageInfos);
+				this.debug('packages included :' + JSON.stringify(packageNames, null, 4));
+				this.spinner.info(`Cross-Linking packages ${packageNames.join(',')}`).start();
 				const cmd = `lerna link ${(options.forceLocal) ? '--force-local' : ''}`;
 				await this.exec(cmd);
+				if (restorePJSONVersionMap.size) {
+					restorePJSONVersionMap.forEach(async (oldVersion, packageInfo: PackageInfo) => {
+						const pJsonPath = packageInfo.filename;
+						const pJson = await new FileDocument(pJsonPath).read();
+						pJson.content.version = oldVersion;
+						await pJson.write();
+					});
+				}
 				this.spinner.succeed('link completed')
-			} catch (e) {
+			}
+			catch
+				(e) {
 				this.debug(e);
 				this.spinner.fail(JSON.stringify(e));
 				this.error(e.message);
@@ -28,9 +69,15 @@ export class LinkCommand extends BaseCommand {
 		}
 	}
 }
-const linkCommand = new LinkCommand();
-cli.command('link', 'link repos dependencies')
+
+const
+	linkCommand = new LinkCommand();
+cli.command('link', 'link repos dependencies inside the workspace')
 	.alias('l')
-	.option('--install', 'also run npm install')
-	.option('--force-local', 'force link ignoreing different versions')
-	.action(linkCommand.getHandler() as ActionCallback);
+	.argument('[packages...]', 'whitelist  - link only within these packages')
+	.option('--b <blacklist>', 'blacklist - comma separated of packages NOT to link', undefined, '')
+	.option('--install'
+		, 'also run npm install')
+	.option('--force-local', 'force link ignoring different versions - does not work with black/white listing')
+	.action(linkCommand.getHandler() as any)
+;

@@ -6,7 +6,6 @@ import * as glob from "glob";
 import {lernaJsonType, PackageInfo} from "../types/package.types";
 
 
-
 export class LernaUtil {
 	private lernaJson!: FileDocument<lernaJsonType>;
 	public packageFolders!: string[];
@@ -32,7 +31,7 @@ export class LernaUtil {
 	}
 
 	private async get_packageFolders() {
-		return this.packages
+		let packages = this.packages
 			.reduce((acc: string[], packageFolder: string) => {
 				if (glob.hasMagic(packageFolder)) {
 					let matches = glob.sync(packageFolder + '/', {});
@@ -47,7 +46,13 @@ export class LernaUtil {
 			.filter((packageFolder: string) => {
 				let folder = path.resolve(packageFolder);
 				return fs.existsSync(folder);
+			})
+			.filter((packageFolder) => {
+				const filePath = `./${packageFolder}/package.json`;
+				return fs.existsSync(filePath)
 			});
+
+		return packages;
 	}
 
 	async packageInfo(): Promise<PackageInfo[]> {
@@ -60,6 +65,12 @@ export class LernaUtil {
 				};
 			})
 		);
+	}
+	static packageInfoToPackageName(packageInfos:PackageInfo[]){
+		return packageInfos.reduce((acc, packageInfo) => {
+			acc.push(packageInfo.name);
+			return acc;
+		}, [] as string[]);
 	}
 }
 
