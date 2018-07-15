@@ -60,7 +60,7 @@ export class PublishCommand extends BaseCommand {
 		return async (args: publishArgs, options: Partial<publishOptions>, logger: Logger) => {
 			this.spinner.start('starting prerequisite checks...');
 			const packageJson = await this.getPackageJSON();
-			const monopolyExtraConfig = packageJson.config && packageJson.config.monopoly ? packageJson.config.monopoly : undefined;
+			const monopolyExtraConfig = packageJson.config && packageJson.config.monopoly ? packageJson.config.monopoly : {};
 			const gitStatus = await this.exec('git status --porcelain');
 			if (gitStatus.stdout.length) {
 				this.fatalErrorHandler(gitStatus.stdout, 'could not publish if working tree is not clean, commit changes first')
