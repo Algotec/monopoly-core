@@ -3,6 +3,8 @@
 
 
 ### CHANGE LOG
+### [1.0.0-beta.1]
+ * link command white and black list options
 ### [1.0.0-beta.0]
 
 * add affected command
