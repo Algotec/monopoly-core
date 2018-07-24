@@ -170,9 +170,9 @@ export class PublishCommand extends BaseCommand {
 					if (options.distTag) {
 						publishMeta.distTag = options.distTag;
 					}
-					logger.log(` published metadata : ####$$$$ 
+					logger.info(` published metadata : ####$$$$ 
 					${JSON.stringify(publishMeta, null, 4)}
-					####$$$$`)
+					####$$$$`);
 				} catch (e) {
 					this.fatalErrorHandler(e,'publish command failed');
 				}
