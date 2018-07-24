@@ -1,5 +1,5 @@
 import {BaseCommand, execResult} from "./baseCommand";
-import {Logger} from "../types";
+import {Logger} from "../types/general-cli.types";
 import * as cli from 'caporal';
 
 export interface deActivationArgs {

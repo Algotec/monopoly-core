@@ -1,19 +1,8 @@
-import {AsyncResult, Logger, SingleValueResult} from "./index";
+import {IPackageInfo} from "./index";
 import {IRepoSearchOpts} from "../commands/list";
-import {Hash} from "../lib/general";
+import {AsyncAPIResult, Logger} from "./general-cli.types";
 
 export {IRepoSearchOpts} from "../commands/list";
-
-export interface DepInfo {
-	[key: string]: string;
-}
-
-export interface IPackageInfo {
-	packageName?: string,
-	deps?: DepInfo
-	devDeps?: DepInfo
-	peerDeps?: DepInfo
-}
 
 export interface repoInfo extends IPackageInfo {
 	name: string,
@@ -22,7 +11,7 @@ export interface repoInfo extends IPackageInfo {
 
 export type repoList = { organization: string, repos: repoInfo[] }[];
 
-export interface RepoListResults extends AsyncResult {
+export interface RepoListResults extends AsyncAPIResult {
 	repoList?: repoList;
 }
 
@@ -32,11 +21,11 @@ export enum dependencyTypes {
 	peerDeps = 'peerDeps'
 };
 
-export interface DependenciesSearchResult extends AsyncResult {
+export interface DependenciesSearchResult extends AsyncAPIResult {
 	depsList?: repoInfo
 }
 
-export interface BranchListSearchResult extends AsyncResult {
+export interface BranchListSearchResult extends AsyncAPIResult {
 	branchList?: string[];
 }
 
@@ -48,19 +37,19 @@ export interface RepoInterface {
 	defaultBranch?: string;
 }
 
-export interface repoResult extends AsyncResult {
+export interface repoResult extends AsyncAPIResult {
 	repo?: RepoInterface;
 }
 
 
-export interface OpenPRResult extends AsyncResult {
+export interface OpenPRResult extends AsyncAPIResult {
 	openedPR: {
 		pullRequestId: number;
 		url: string;
 		[key: string]: any;
 	}
 }
-export interface AffectedResult extends AsyncResult {
+export interface AffectedResult extends AsyncAPIResult {
 	affected?:boolean;
 }
 
@@ -78,7 +67,7 @@ export interface RepoApiInterface {
 
 	getRepo(logger: Logger, filter: { name?: string, organization?: string }): Promise<repoResult>;
 
-	openPR(logger: Logger, repoURL: string, sourceBranch: string, taregtBranch: string, title: string, description?: string): Promise<OpenPRResult>;
+	openPR?(logger: Logger, repoURL: string, sourceBranch: string, taregtBranch: string, title: string, description?: string): Promise<OpenPRResult>;
 
 	affectedByPackage?(logger: Logger, packageDesc: PackageDesc, project: string, repoName: string, branch?: string): Promise<AffectedResult>
 }

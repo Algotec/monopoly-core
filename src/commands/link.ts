@@ -1,5 +1,5 @@
 import {BaseCommand} from "./baseCommand";
-import {Logger, PackageInfo} from "../types";
+import {Logger, WorkspacePackageInfo} from "../types";
 import * as path from "path";
 import {LernaUtil} from "../lib/lerna-util";
 import * as cli from 'caporal';
@@ -18,7 +18,7 @@ export interface linkOptions {
 export class LinkCommand extends BaseCommand {
 	getHandler() {
 		return async (args: linkArguments, options: linkOptions, logger: Logger) => {
-			let restorePJSONVersionMap: Map<PackageInfo, string> = new Map();
+			let restorePJSONVersionMap: Map<WorkspacePackageInfo, string> = new Map();
 			try {
 				this.debug(`${this.constructor.name} handler args: ${JSON.stringify(args)}, options :${JSON.stringify(options)}`);
 				let lerna = await (new LernaUtil().parse(path.join(process.cwd(), 'lerna.json')));
@@ -62,7 +62,7 @@ export class LinkCommand extends BaseCommand {
 			}
 			finally {
 				if (restorePJSONVersionMap.size) {
-					restorePJSONVersionMap.forEach(async (oldVersion, packageInfo: PackageInfo) => {
+					restorePJSONVersionMap.forEach(async (oldVersion, packageInfo: WorkspacePackageInfo) => {
 						const pJsonPath = packageInfo.filename;
 						try {
 							const pJson = await new FileDocument(pJsonPath).read();

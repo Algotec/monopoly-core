@@ -1,4 +1,4 @@
-import {DieHardError, Logger, repoResult} from "../types/index";
+import {repoResult,DieHardError, Logger} from "../types";
 import chalk from "chalk";
 import {isInMonopoly} from "../lib/fs";
 import {BaseCommand} from "./baseCommand";

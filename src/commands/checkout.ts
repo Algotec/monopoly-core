@@ -1,5 +1,5 @@
 import {BaseCommand} from "./baseCommand";
-import {Logger} from "../types";
+import {Logger} from "../types/general-cli.types";
 import {LernaUtil} from "../lib/lerna-util";
 import * as path from "path";
 import {FileDocument} from "../lib/fileDocument";

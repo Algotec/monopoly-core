@@ -1,4 +1,4 @@
-import {ActionCallback, dependencyTypes, DieHardError, Logger, repoInfo} from "../types/index";
+import {dependencyTypes, repoInfo, ActionCallback, DieHardError, Logger} from "../types";
 import chalk from "chalk";
 import {BaseCommand} from "./baseCommand";
 import {cliLogger, consoleLogger} from "../lib/logger";

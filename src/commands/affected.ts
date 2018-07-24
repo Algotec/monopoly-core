@@ -1,4 +1,4 @@
-import {DieHardError, Logger, PackageDesc} from "../types/index";
+import {PackageDesc,DieHardError, Logger} from "../types";
 import {BaseCommand} from "./baseCommand";
 import * as cli from 'caporal';
 import {projectRepoValidator} from "../lib/general";

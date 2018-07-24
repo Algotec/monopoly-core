@@ -3,7 +3,7 @@ import {FileDocument} from "./fileDocument";
 import * as path from "path";
 import * as fs from "fs";
 import * as glob from "glob";
-import {lernaJsonType, PackageInfo} from "../types/package.types";
+import {lernaJsonType, WorkspacePackageInfo} from "../types/package.types";
 
 
 export class LernaUtil {
@@ -55,7 +55,7 @@ export class LernaUtil {
 		return packages;
 	}
 
-	async packageInfo(): Promise<PackageInfo[]> {
+	async packageInfo(): Promise<WorkspacePackageInfo[]> {
 		return await Promise.all(this.packageFolders.map(async (packageFolder: string) => {
 				const filePath = `./${packageFolder}/package.json`;
 				const json = (await new FileDocument(filePath).read()).content;
@@ -66,7 +66,7 @@ export class LernaUtil {
 			})
 		);
 	}
-	static packageInfoToPackageName(packageInfos:PackageInfo[]){
+	static packageInfoToPackageName(packageInfos:WorkspacePackageInfo[]){
 		return packageInfos.reduce((acc, packageInfo) => {
 			acc.push(packageInfo.name);
 			return acc;

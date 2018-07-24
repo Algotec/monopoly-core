@@ -1,4 +1,4 @@
-import {Logger} from "../types/index";
+import {Logger} from "../types/general-cli.types";
 import {RepoApiInterface} from "../types/repo.api-interface";
 import chalk from "chalk";
 import {isInMonopoly} from "../lib/fs";

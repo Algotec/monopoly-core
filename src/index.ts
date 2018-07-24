@@ -1,29 +1,31 @@
 #!/usr/bin/env node
 // async iterator polyfill for node
 import {promisify} from "util";
-
-(<any>Symbol).asyncIterator = Symbol.asyncIterator || Symbol.for("Symbol.asyncIterator");
-
 import './lib/ide-fix';
 import {cliLogger} from "./lib/logger";
-import {CliTool, DieHardError, ICliOptions, RepoApiInterface, TasksManagementAPIInterface} from "./types/index";
+import {RepoApiInterface} from "./types/index";
 import {BaseCommand} from "./commands/baseCommand";
 import * as caporal from "caporal";
-import {readdir, statSync} from "fs";
+import {readdir} from "fs";
 import * as path from "path";
 import {onlyJSFile} from "./lib/general";
+import {CliTool, ICliOptions} from "./types/general-cli.types";
+
+
+(<any>Symbol).asyncIterator = Symbol.asyncIterator || Symbol.for("Symbol.asyncIterator");
 
 const read = promisify(readdir);
 
 
 const packageJson = require('../package.json');
 //exports
-export * from "./types/index";
+export * from './types';
 export {BaseCommand} from "./commands/baseCommand";
+export  {isInMonopoly} from "./lib/fs";
+export  {LernaUtil} from "./lib/lerna-util";
 export {consoleLogger} from "./lib/logger";
-export default async function makeCli(repoApi: RepoApiInterface, tasksApi: TasksManagementAPIInterface, cliOptions: Partial<ICliOptions> = {}): Promise<CliTool> {
+export default async function makeCli(repoApi: RepoApiInterface, cliOptions: Partial<ICliOptions> = {}): Promise<CliTool> {
 	BaseCommand.repoApi = repoApi;
-	BaseCommand.taskApi = tasksApi;
 
 	const cli = caporal
 		.name(cliOptions.name || 'monopoly CLI')
@@ -48,8 +50,6 @@ export default async function makeCli(repoApi: RepoApiInterface, tasksApi: Tasks
 		.filter(fileName => onlyJSFile(fileName) && !fileName.includes('baseCommand'))
 		.forEach(require);
 
-
 	return cli as CliTool;
 }
-
 

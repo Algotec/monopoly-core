@@ -1,10 +1,11 @@
 import {BaseCommand} from './baseCommand';
 
-import {DieHardError, IRepoSearchOpts} from '../types';
+import {IRepoSearchOpts} from '../types';
 import {IProjectRepoName, projectRepoValidator} from "../lib/general";
 import chalk from "chalk";
 import {consoleLogger} from "../lib/logger";
 import * as caporal from 'caporal';
+import {DieHardError} from "../types";
 
 
 export interface IListBranchesCommandOptions {

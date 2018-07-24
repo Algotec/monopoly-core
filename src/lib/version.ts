@@ -1,12 +1,12 @@
 import * as fs from "fs";
 import chalk from "chalk";
 import {consoleLogger} from './logger';
-import {PackageInfo} from "../types";
+import {WorkspacePackageInfo} from "../types";
 import * as semver from 'semver'
 
 const log = consoleLogger.info;
 
-export function ShowOrFixPackageVersoins(fix: boolean, packageInfos: PackageInfo[]) {
+export function ShowOrFixPackageVersoins(fix: boolean, packageInfos: WorkspacePackageInfo[]) {
 	const filesToWrite: { filename: string, content: any }[] = [];
 	const LibPackagesNames = packageInfos.map(packageInfo => packageInfo.json)
 		.filter(packageJson => !packageJson.private).map(packageJson => packageJson.name);

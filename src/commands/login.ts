@@ -1,5 +1,5 @@
 import {BaseCommand} from "./baseCommand";
-import {Logger} from "../types";
+import {Logger} from "../types/general-cli.types";
 import * as clortho from 'clortho';
 import * as cli from 'caporal';
 
@@ -30,7 +30,6 @@ export class LoginCommand extends BaseCommand {
 		} finally {
 			const {username, password} = credentials;
 			if (username && password) {
-				this.taskApi.setCredentials(username, password);
 				this.repoApi.setCredentials(username, password);
 			} else if (!this.loginCommandWorking) {
 				cliLogger.warn('Not logged in to monopoly, please run login command');

@@ -1,12 +1,14 @@
 /// <reference types="node"/>
+/// <reference types="winston"/>
 import * as sh from 'shelljs';
-import {DieHardError, Logger, RepoApiInterface, TasksManagementAPIInterface} from "../types";
+import {DieHardError, Logger, RepoApiInterface} from "../types";
 import {cliLogger} from "../lib/logger";
 import * as child from "child_process";
 import * as Ora from 'ora';
 import {FileDocument} from "../lib/fileDocument";
 import * as path from "path";
-import winston = require('winston');
+import * as winston from "winston";
+
 
 export interface ExecOptions extends child.ExecOptions {
 	silent?: boolean;
@@ -69,18 +71,15 @@ export abstract class BaseCommand<ARGS = any, OPTS = any> {
 
 	constructor() {
 		this.repoApi = BaseCommand.repoApi;
-		this.taskApi = BaseCommand.taskApi;
 	}
 
 	static repoApi: RepoApiInterface;
 	repoApi: RepoApiInterface;
-	static taskApi: TasksManagementAPIInterface;
-	taskApi: TasksManagementAPIInterface;
-	log = cliLogger.log;
-	debug = cliLogger.debug;
-	warn = cliLogger.warn;
-	error = cliLogger.error;
-	info = cliLogger.info;
+	log: winston.LogMethod = cliLogger.log;
+	debug: winston.LeveledLogMethod = cliLogger.debug;
+	warn: winston.LeveledLogMethod = cliLogger.warn;
+	error: winston.LeveledLogMethod = cliLogger.error;
+	info: winston.LeveledLogMethod = cliLogger.info;
 	protected spinner: ISpinner = Ora({spinner: 'dots'});
 
 	async execAll(cmds: cmdsArray) {

@@ -14,11 +14,22 @@ export interface PackageJsonType {
 	[key: string]: any;
 }
 
-export interface PackageInfo {
+export interface WorkspacePackageInfo {
 	filename: string,
 	json: PackageJsonType,
 	version: string,
 	name: string,
 	repoUrl: string
 	folder: string
+}
+
+export interface DepInfo {
+	[key: string]: string;
+}
+
+export interface IPackageInfo {
+	packageName?: string,
+	deps?: DepInfo
+	devDeps?: DepInfo
+	peerDeps?: DepInfo
 }
