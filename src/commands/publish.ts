@@ -1,12 +1,15 @@
 import {BaseCommand} from "./baseCommand";
-import {Logger} from "../types";
+import {DieHardError, Logger} from "../types/general-cli.types";
 import * as shell from 'shelljs';
 import * as caporal from "caporal";
 import {FileDocument} from "../lib/fileDocument";
 import * as path from "path";
+import * as semver from 'semver';
+import {version} from "punycode";
 
 const standardVersion = require("standard-version");
-
+export const canaryPrefix = 'canary';
+export const fullCanaryPrefix = `-${canaryPrefix}.`;
 export type NPMPreValidatedVersions = 'major' | 'minor' | 'patch' | 'premajor' | 'preminor' | 'prepatch' | 'prerelease' | 'from-git'
 
 
@@ -35,20 +38,23 @@ export class PublishCommand extends BaseCommand {
 			if (args.version || options.canary) {
 				const packageJson = await this.getPackageJSON();
 				let tagName = `v${args.version}`;
-				let distTag = args.version;
+				let publishVersion = args.version;
 				if (options.canary) {
-					const {branch, sha} = await this.getCanaryArgs();
-					tagName = this.getCanaryTagName(packageJson.version, branch, sha);
-					distTag = this.getCanaryDistTag(packageJson.version, branch);
+					const {sha} = await this.getCanaryArgs(true);
+					console.log('got this sha :',sha);
+					const baseVersion = this.getVersionBase(packageJson.version);
+					tagName = this.getCanaryTagName(baseVersion, sha);
+					publishVersion = this.getCanaryVersion(baseVersion, sha);
 				}
-				this.spinner.start(`going to unpublish ${tagName} tag and ${distTag} version`);
+				this.spinner.start(`Going to remove  ${tagName} git tag and un-publish version ${publishVersion} from npm`);
 				try {
-					await this.exec(`npm unpublish ${packageJson.name}@${distTag}`, {progress: true});
 					await this.exec(`git tag -d ${tagName}`, {progress: true});
 					await this.exec(`git push --delete origin refs/tags/${tagName}`, {progress: true});
+					await this.exec(`npm unpublish ${packageJson.name}@${publishVersion}`, {progress: true});
 				} catch (e) {
 					this.fatalErrorHandler(e, 'unpublish failed');
 				}
+				this.spinner.warn('notice that dist-tag has not been changed, needs to be manually set to last available valid version for this tag');
 				this.spinner.succeed('version unpublished');
 			} else {
 				this.error('must supply version to unpublish');
@@ -105,15 +111,16 @@ export class PublishCommand extends BaseCommand {
 			}
 			const standardArgs: any = {dryRun: options.dryRun, silent: !process.env.AMP_DEBUG};
 			if (options.canary) {
-				const {branch, sha} = await this.getCanaryArgs();
-				const versionBase = packageJson.version;
-				options.distTag = this.getCanaryDistTag(versionBase, branch);
+				let {branch, sha} = await this.getCanaryArgs();
+				let versionBase = this.getVersionBase(packageJson.version);
+				const version = this.getCanaryVersion(versionBase, sha);
+				const distTag = this.getCanaryDistTag(versionBase, branch);
+				options.distTag = distTag;
 				this.spinner.info(`starting canary release for distTag ${options.distTag}`);
-				const tagName = this.getCanaryTagName(versionBase, branch, sha);
 				try {
-					await this.exec(`git tag -a ${tagName} -m"canary release for version ${versionBase} in branch ${branch}"`, {progress: true});
+					await this.exec(`npm version ${version} -m"canary release for version ${versionBase} in branch ${branch}"`, {progress: true});
 				} catch (e) {
-					this.fatalErrorHandler('tag failed', 'git tag failed, stopping publish');
+					this.fatalErrorHandler('npm version failed', 'npm version failed, stopping publish');
 				}
 			} else {
 				if (args.version) {
@@ -156,6 +163,10 @@ export class PublishCommand extends BaseCommand {
 				this.spinner.info('publishing into npm registry');
 				const basePublish = ['npm publish'];
 				if (options.distTag) {
+					const semverValid = semver.valid(options.distTag);
+					if (semverValid) {
+						throw new DieHardError(` requested dist-tag name - ${options.distTag} is semver valid and therefor NOT valid as dist-tag, cannot publish`);
+					}
 					basePublish.push(`--tag ${options.distTag}`);
 				}
 				let pjsonPath = path.join(process.cwd(), 'package.json');
@@ -170,11 +181,9 @@ export class PublishCommand extends BaseCommand {
 					if (options.distTag) {
 						publishMeta.distTag = options.distTag;
 					}
-					logger.info(` published metadata : ####$$$$ 
-					${JSON.stringify(publishMeta, null, 4)}
-					####$$$$`);
+					logger.info(` published metadata : ####$$$$ ${JSON.stringify(publishMeta, null, 4)}####$$$$`);
 				} catch (e) {
-					this.fatalErrorHandler(e,'publish command failed');
+					this.fatalErrorHandler(e, 'publish command failed');
 				}
 				if (!options.noDeploy) {
 					let extraRemote: string | string[] | undefined = (monopolyExtraConfig && monopolyExtraConfig.publish && monopolyExtraConfig.publish.postPublishDeploy) ? monopolyExtraConfig.publish.postPublishDeploy : undefined;
@@ -199,6 +208,13 @@ export class PublishCommand extends BaseCommand {
 		}
 	}
 
+	private getVersionBase(version: string) {
+		if (version.includes(fullCanaryPrefix)) { // already a canary release - regain the version base
+			version = version.substr(0, version.indexOf(fullCanaryPrefix));
+		}
+		return version;
+	}
+
 	private async getPjsonVersion(pjsonPath: string): Promise<string> {
 		try {
 			const pJsonPublished = (await new FileDocument(pjsonPath).read()).content;
@@ -208,18 +224,23 @@ export class PublishCommand extends BaseCommand {
 		}
 	}
 
-	private async getCanaryArgs() {
-		const branch = (await this.exec(` git symbolic-ref -q --short HEAD`)).stdout.trim();
-		const sha = (await this.exec(`  git rev-parse --short HEAD`)).stdout.trim();
+	private async getCanaryArgs(last: boolean = false) {
+		const branch = (await this.exec(`git symbolic-ref -q --short HEAD`)).stdout.trim();
+		const sha = (await this.exec(`git rev-parse --short ${last ? "HEAD^" : "HEAD"}`, {progress: true})).stdout.trim();
 		return {branch, sha};
 	}
 
-	private getCanaryTagName(versionBase: any, branch: string, sha: string) {
-		return `v${versionBase}-${branch}.${sha}`
+	private getCanaryTagName(versionBase: any, sha: string) {
+		return `v${this.getCanaryVersion(versionBase, sha)}`
+	}
+
+	private getCanaryVersion(versionBase: any, sha: string) {
+		return `${versionBase}-${canaryPrefix}.${sha}`;
 	}
 
 	private getCanaryDistTag(versionBase: any, branch: string) {
-		return `${versionBase}-${branch}`;
+		return `${canaryPrefix}-${versionBase}-${branch}`;
+
 	}
 
 }
