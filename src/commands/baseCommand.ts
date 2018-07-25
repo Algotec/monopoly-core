@@ -187,6 +187,13 @@ export abstract class BaseCommand<ARGS = any, OPTS = any> {
 		((sh as any).ShellString(content)as any).to(filename);
 	}
 
+	protected async getWorkspaceRoot(modulePath: string): Promise<string> {
+		const moduleGitDir = (await this.exec(`git rev-parse --git-dir`)).stdout.trim();
+		const baseArr = moduleGitDir.split('/');
+		const baseStr = baseArr.slice(0, baseArr.indexOf('.git')).join(path.sep);
+		return baseStr
+	}
+
 	abstract getHandler(...args: any[]): (args: ARGS, options: OPTS, logger: Logger) => void | Promise<void>;
 }
 
