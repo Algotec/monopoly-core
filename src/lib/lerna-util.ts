@@ -9,9 +9,11 @@ import {lernaJsonType, WorkspacePackageInfo} from "../types/package.types";
 export class LernaUtil {
 	private lernaJson!: FileDocument<lernaJsonType>;
 	public packageFolders!: string[];
+	private lernaRootPath!: string;
 
 	async parse(pathToLerna: string) {
 		this.lernaJson = await new FileDocument<lernaJsonType>(pathToLerna).read();
+		this.lernaRootPath = path.dirname(path.resolve(pathToLerna));
 		this.packageFolders = await this.get_packageFolders();
 
 		return this;
@@ -34,12 +36,12 @@ export class LernaUtil {
 		let packages = this.packages
 			.reduce((acc: string[], packageFolder: string) => {
 				if (glob.hasMagic(packageFolder)) {
-					let matches = glob.sync(packageFolder + '/', {});
+					let matches = glob.sync(path.join(this.lernaRootPath, packageFolder), {});
 					if (matches) {
 						acc = acc.concat(matches.filter(((match: string) => !match.includes('node_modules'))));
 					}
 				} else {
-					acc.push(packageFolder);
+					acc.push(path.join(this.lernaRootPath, packageFolder));
 				}
 				return acc;
 			}, [])
@@ -48,7 +50,7 @@ export class LernaUtil {
 				return fs.existsSync(folder);
 			})
 			.filter((packageFolder) => {
-				const filePath = `./${packageFolder}/package.json`;
+				const filePath = path.join(packageFolder, 'package.json');
 				return fs.existsSync(filePath)
 			});
 
@@ -57,7 +59,7 @@ export class LernaUtil {
 
 	async packageInfo(): Promise<WorkspacePackageInfo[]> {
 		return await Promise.all(this.packageFolders.map(async (packageFolder: string) => {
-				const filePath = `./${packageFolder}/package.json`;
+				const filePath = path.join(packageFolder, 'package.json');
 				const json = (await new FileDocument(filePath).read()).content;
 				const url = (json.repository) ? json.repository.url : '';
 				return {
@@ -66,7 +68,8 @@ export class LernaUtil {
 			})
 		);
 	}
-	static packageInfoToPackageName(packageInfos:WorkspacePackageInfo[]){
+
+	static packageInfoToPackageName(packageInfos: WorkspacePackageInfo[]) {
 		return packageInfos.reduce((acc, packageInfo) => {
 			acc.push(packageInfo.name);
 			return acc;
