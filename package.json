@@ -1,6 +1,6 @@
 {
   "name": "@algotec/monopoly",
-  "version": "1.0.0-beta.3",
+  "version": "1.0.0-beta.4",
   "description": "A CLI tool to work with the multiple repos as a monorepo",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
