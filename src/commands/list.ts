@@ -31,9 +31,8 @@ export class ListCommand extends BaseCommand {
 			consoleLogger.info(JSON.stringify(depsSearchResult.depsList, null, 4))
 		} else {
 			if (depsSearchResult.depsList) {
-				consoleLogger.info('');
-				Object.entries(depsSearchResult.depsList).forEach(([depName, version]) => {
-					consoleLogger.info(`${chalk.green(depName)} : ${chalk.magenta(version.toString())}`);
+				Object.entries(depsSearchResult.depsList).forEach(([depName, dependencyList]) => {
+					consoleLogger.info(`${chalk.green(depName)} : ${chalk.magenta(JSON.stringify(dependencyList, null, 4))}`);
 				});
 			}
 		}
