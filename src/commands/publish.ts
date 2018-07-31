@@ -22,6 +22,7 @@ export interface publishOptions {
 	canary: boolean;
 	noBump: boolean;
 	noBuild: boolean;
+	noVerify: boolean;
 	noPush: boolean;
 	noPublish: boolean;
 	noClean: boolean;
@@ -156,6 +157,9 @@ export class PublishCommand extends BaseCommand {
 					standardArgs.prerelease = options.prerelease;
 				}
 
+				if (options.noVerify) {
+					standardArgs.noVerify = true;
+				}
 				if (options.noBump) {
 					standardArgs.skip = standardArgs.skip || {};
 					standardArgs.skip.bump = true;
@@ -290,6 +294,7 @@ caporal.command('publish', 'publishes the package in current folder')
 	.option('--prerelease <prerelease>', 'makes a prerelease such as 1.0.0-beta.0 where beta is the option you can change here')
 	.option('--distTag <distTag>', '')
 	.option('--noBump', 'do not bump version, use existing')
+	.option('--noVerify', 'do not run git hooks')
 	.option('--canary', 'use git branch and sha as pre-release-version and dist tag')
 	.option('--noPush', 'do not push to origin')
 	.option('--noPublish', 'do not publish to npm registry')
