@@ -5,24 +5,26 @@ monopoly.log
 `.trim();
 
 const lernaVersion = "2.5.1";
-export const packageJsonValue =
-	`
-	{
-        "devDependencies": {
-                "lerna": "${lernaVersion}"
-        }
-}
-	`.trim();
 
-export const lernaJsonValue =
-	`
-	{
-  "lerna":"${lernaVersion}",
-	"useGitVersion": true,
-  "gitVersionPrefix": "v",
-  "packages": [
-  ],
-  "version": "independent"
+export function getPackageJsonValue() {
+	return JSON.stringify({
+		"devDependencies": {
+			"lerna": lernaVersion
+		}
+	}, null, 2);
 }
 
-	`.trim();
+export function getLernaJsonValue(hoist: boolean) {
+	const lernaBaseConfig: any = {
+		"lerna": lernaVersion,
+		"useGitVersion": true,
+		"gitVersionPrefix": "v",
+		"packages": [],
+		"version": "independent"
+	};
+	if (hoist) {
+		lernaBaseConfig.hoist = true;
+	}
+	return JSON.stringify(lernaBaseConfig, null, 4);
+
+}

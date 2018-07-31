@@ -1,7 +1,7 @@
 import {ActionCallback, DieHardError, Logger} from "../types";
 import {isInGitFolder} from "../lib/fs";
 import * as sh from 'shelljs';
-import {gitIgnoreValue, lernaJsonValue, packageJsonValue} from "./data/init.data";
+import {getLernaJsonValue, gitIgnoreValue, getPackageJsonValue} from "./data/init.data";
 import {BaseCommand} from "./baseCommand";
 import * as caporal from 'caporal';
 
@@ -17,7 +17,7 @@ export class InitCommand extends BaseCommand {
 	}
 
 	getHandler(): ActionCallback {
-		return async (args: any, options: any, logger: Logger): Promise<void> => {
+		return async (args: any, options: { hoist: boolean }, logger: Logger): Promise<void> => {
 			this.debug(`${this.constructor.name} handler args: ${JSON.stringify(args)} + options :${JSON.stringify(options)}`);
 			const folder = args.folder;
 			if (isInGitFolder(folder)) {
@@ -31,8 +31,8 @@ export class InitCommand extends BaseCommand {
 				/// todo make a repo for these files and get them via git archive --remote=<repository URL> @ | tar -t
 				this.spinner.info('adding workspace files...');
 				this.outputFile('.gitignore', gitIgnoreValue);
-				this.outputFile('lerna.json', lernaJsonValue);
-				this.outputFile('package.json', packageJsonValue);
+				this.outputFile('lerna.json', getLernaJsonValue(options.hoist));
+				this.outputFile('package.json', getPackageJsonValue());
 				this.spinner.info('installing workspace dependencies...').start();
 				await this.exec('npm i');
 				// await this.exec('lerna init --loglevel=warn');
@@ -58,5 +58,6 @@ export class InitCommand extends BaseCommand {
 const initCommand = new InitCommand();
 caporal.command('init', 'init a new monopoly workspace at current folder')
 	.argument('[folder]', 'folder to create  - defaults to current folder', caporal.STRING, '.')
+	.option('--hoist', 'allow hoisting of modules to root workspace level', caporal.BOOLEAN, false)
 	.action(initCommand.getHandler());
 
