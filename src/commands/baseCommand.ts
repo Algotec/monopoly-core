@@ -176,7 +176,7 @@ export abstract class BaseCommand<ARGS = any, OPTS = any> {
 	protected fatalErrorHandler(e: any, message?: string): never {
 		this.spinner.fail(message);
 		this.debug(e);
-		throw new DieHardError(e.message||e.error);
+		throw new DieHardError(e.message||e.error||e);
 	}
 
 	getDocument(filename: string): Promise<FileDocument> {
