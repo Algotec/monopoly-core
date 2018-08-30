@@ -1,7 +1,7 @@
 import {ActionCallback, DieHardError, Logger} from "../types";
 import {isInGitFolder} from "../lib/fs";
 import * as sh from 'shelljs';
-import {getLernaJsonValue, gitIgnoreValue, getPackageJsonValue} from "./data/init.data";
+import {getLernaJsonValue, gitIgnoreValue, getPackageJsonValue, lernaVersion} from "./data/init.data";
 import {BaseCommand} from "./baseCommand";
 import * as caporal from 'caporal';
 
@@ -12,7 +12,7 @@ export class InitCommand extends BaseCommand {
 		this.debug(npmParsed);
 		if (!npmParsed.dependencies) {
 			this.spinner.info('installing global dependencies...');
-			await this.exec(`npm i -g lerna`);
+			await this.exec(`npm i -g lerna@${lernaVersion}`);
 		}
 	}
 

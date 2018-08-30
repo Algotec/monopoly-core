@@ -8,25 +8,29 @@ import * as  path from "path";
  * This is a hack to force exclusion of linked dependencies.
  */
 
-let LsCommand: any = require("lerna/lib/commands/LsCommand");
-LsCommand = LsCommand.default || LsCommand;
-
+const exec = require('child_process').exec;
 const builder = new xml2js.Builder();
-const ls = new LsCommand(null, {}, process.cwd());
-ls.runPreparations();
 const parser = new xml2js.Parser();
+let filteredPkgs: any;
 
-
-const filteredPkgs = ls.filteredPackages.reduce(function (ret: any, pkg: any) {
-	ret[pkg.name] = pkg;
-	return ret;
-}, {});
+function prepare() {
+	return new Promise((resolve) => {
+		exec('lerna list --json', (err: any, stdout: any) => {
+			const lernaOut = JSON.parse(stdout);
+			filteredPkgs = lernaOut.reduce(function (ret: any, pkg: any) {
+				ret[pkg.name] = pkg;
+				return ret;
+			}, {});
+			resolve();
+		});
+	});
+};
 
 function addIfNotExists(arr: any[], name: string) {
 	var url = `file://$MODULE_DIR$/${name}`;
 	if (arr.find(function (obj) {
-			return obj.$.url === url;
-		})) {
+		return obj.$.url === url;
+	})) {
 		return false;
 	}
 	arr.push({
@@ -198,12 +202,15 @@ function buildLinks(): { [key: string]: any } {
 	return LINKS
 }
 
+
 module.exports = {
 	exit,
 	buildLinks
 };
 if (require.main === module) {
-	findWorkspaceIml(updateIntellij(exit));
+	prepare().then(() => {
+		findWorkspaceIml(updateIntellij(exit));
+	});
 }
 
 

@@ -4,7 +4,7 @@ export const gitIgnoreValue =
 monopoly.log
 `.trim();
 
-const lernaVersion = "2.5.1";
+export const lernaVersion = "3.2.1";
 
 export function getPackageJsonValue() {
 	return JSON.stringify({

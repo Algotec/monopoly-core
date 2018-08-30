@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 // async iterator polyfill for node
 import {promisify} from "util";
-import './lib/ide-fix';
 import {cliLogger} from "./lib/logger";
 import {RepoApiInterface} from "./types/index";
 import {BaseCommand} from "./commands/baseCommand";
