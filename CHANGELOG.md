@@ -3,19 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-       <a name="1.0.0-beta.6"></a>
-# [1.0.0-beta.6](http://git-srv.algotec.co.il:8080/tfs/DefaultCollection/web-common/_git/workspace-project/compare/v1.0.0-beta.5...v1.0.0-beta.6) (2018-07-31)
-
-
-
-
-**Note:** Version bump only for package @algotec/monopoly
-
-       # Monopoly
+      # Monopoly
 #### Mono repo in a poly repo world.
 
 
 ### CHANGE LOG
+### [1.0.0-beta.7](http://git-srv.algotec.co.il:8080/tfs/DefaultCollection/web-common/_git/workspace-project/branches?baseVersion=GTv1.0.0-beta.6&targetVersion=GTv1.0.0-beta.7&_a=commits) (2018-07-31)
+- update lerna to 3.2.1
+### BREAKING CHANGES
+- since lerna is a peer global dependency users need to manually update it via 
+	`npm i -g lerna@3.2.1`
+	 
+### [1.0.0-beta.6](http://git-srv.algotec.co.il:8080/tfs/DefaultCollection/web-common/_git/workspace-project/branches?baseVersion=GTv1.0.0-beta.5&targetVersion=GTv1.0.0-beta.6&_a=commits) (2018-07-31)
+- update vso-node-api
+
 ### [1.0.0-beta.1]
 * link command white and black list options
 ### [1.0.0-beta.0]

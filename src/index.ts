@@ -20,8 +20,9 @@ const packageJson = require('../package.json');
 //exports
 export * from './types';
 export {BaseCommand} from "./commands/baseCommand";
-export  {isInMonopoly} from "./lib/fs";
-export  {LernaUtil} from "./lib/lerna-util";
+export {isInMonopoly} from "./lib/fs";
+export {FileDocument} from "./lib/fileDocument";
+export {LernaUtil} from "./lib/lerna-util";
 export {consoleLogger} from "./lib/logger";
 export default async function makeCli(repoApi: RepoApiInterface, cliOptions: Partial<ICliOptions> = {}): Promise<CliTool> {
 	BaseCommand.repoApi = repoApi;

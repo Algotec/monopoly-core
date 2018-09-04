@@ -308,7 +308,7 @@ caporal.command('publish', 'publishes the package in current folder')
 
 
 caporal
-	.command('unpublish', 'publishes the package in current folder').argument(
+	.command('unpublish', 'unpublishes packages').argument(
 	'[version]', 'version identifier x.x.x - needed unless canary')
 	.option('--canary', 'use canary version based on branch name and last sha')
 	.option('--exact', 'use exact version not adding v to tag name')
