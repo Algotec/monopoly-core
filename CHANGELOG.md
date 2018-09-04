@@ -3,26 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-<a name="1.0.0-beta.8"></a>
-# [1.0.0-beta.8](http://git-srv.algotec.co.il:8080/tfs/DefaultCollection/web-common/_git/workspace-project/compare/v1.0.0-beta.7...v1.0.0-beta.8) (2018-09-04)
-
-**Note:** Version bump only for package @algotec/monopoly
-
-
-
-
-
-# Change Log
-
-All notable changes to this project will be documented in this file.
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
-
       # Monopoly
 #### Mono repo in a poly repo world.
 
-
 ### CHANGE LOG
-### [1.0.0-beta.7](http://git-srv.algotec.co.il:8080/tfs/DefaultCollection/web-common/_git/workspace-project/branches?baseVersion=GTv1.0.0-beta.6&targetVersion=GTv1.0.0-beta.7&_a=commits) (2018-07-31)
+### [1.0.0-beta.8](http://git-srv.algotec.co.il:8080/tfs/DefaultCollection/web-common/_git/workspace-project/branches?baseVersion=GTv1.0.0-beta.7&targetVersion=GTv1.0.0-beta.8&_a=commits) (2018-09-04)
+	- fixes to file document
+### [1.0.0-beta.7](http://git-srv.algotec.co.il:8080/tfs/DefaultCollection/web-common/_git/workspace-project/branches?baseVersion=GTv1.0.0-beta.6&targetVersion=GTv1.0.0-beta.7&_a=commits) (2018-09-04)
 - update lerna to 3.2.1
 ### BREAKING CHANGES
 - since lerna is a peer global dependency users need to manually update it via 
