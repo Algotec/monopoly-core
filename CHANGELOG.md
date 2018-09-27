@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="1.0.0-beta.9"></a>
+# [1.0.0-beta.9](http://git-srv.algotec.co.il:8080/tfs/DefaultCollection/web-common/_git/workspace-project/compare/v1.0.0-beta.8...v1.0.0-beta.9) (2018-09-27)
+
+**Note:** Version bump only for package @algotec/monopoly
+
+
+
+
+
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
       # Monopoly
 #### Mono repo in a poly repo world.
 
