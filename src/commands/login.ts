@@ -28,6 +28,7 @@ export class LoginCommand extends BaseCommand {
 		catch (e) {
 			this.debug('did not get credentials from OS');
 		} finally {
+			credentials.password = Buffer.from(credentials.password, 'base64').toString('utf8');
 			const {username, password} = credentials;
 			if (username && password) {
 				this.repoApi.setCredentials(username, password);
@@ -46,6 +47,7 @@ export class LoginCommand extends BaseCommand {
 		return async (args: { [p: string]: any }, options: { [p: string]: any }, logger: Logger) => {
 			this.loginCommandWorking = true;
 			const credentials = await loginPrompt.prompt(usernameFromOS, 'Please login to Monopoly', true);
+			credentials.password = Buffer.from(credentials.password, 'utf8').toString('base64');
 			const {username, password} = credentials;
 			try {
 				const success = await loginPrompt.saveToKeychain(username, password);
@@ -64,6 +66,7 @@ const loginCommand = new LoginCommand();
 
 export async function doLogin() {
 	await loginCommand.getCredentials();
+
 	return await loginCommand.repoApi.connect();
 }
 
