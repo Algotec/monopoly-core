@@ -34,7 +34,7 @@ export class LinkCommand extends BaseCommand {
 						const pakagesWhitelist = args.packages;
 						packageInfos = packageInfos.filter(packageInfo => pakagesWhitelist.indexOf(packageInfo.name) !== -1 || pakagesWhitelist.indexOf(packageInfo.folder) !== -1);
 					}
-					const packagesNotIncluded = originalPackages.filter(packageInfo => !packageInfos.find(pinfo => pinfo.name === packageInfo.name))
+					const packagesNotIncluded = originalPackages.filter(packageInfo => !packageInfos.find(pinfo => pinfo.name === packageInfo.name));
 					if (packagesNotIncluded.length) {
 						packagesNotIncluded.forEach(async packageInfo => {
 							const pJsonPath = packageInfo.filename;
@@ -44,10 +44,10 @@ export class LinkCommand extends BaseCommand {
 							await pJson.write();
 						});
 					}
-					this.debug('packages not included :' + JSON.stringify(LernaUtil.packageInfoToPackageName(packagesNotIncluded), null, 4));
+					this.debug('packages not included :' + JSON.stringify(LernaUtil.packageInfoToPackageName(packagesNotIncluded), null, 2));
 				}
 				const packageNames = LernaUtil.packageInfoToPackageName(packageInfos);
-				this.debug('packages included :' + JSON.stringify(packageNames, null, 4));
+				this.debug('packages included :' + JSON.stringify(packageNames, null, 2));
 				this.spinner.info(`Cross-Linking packages ${packageNames.join(',')}`).start();
 				const cmd = `lerna link ${(options.forceLocal) ? '--force-local' : ''}`;
 				await this.exec(cmd);
