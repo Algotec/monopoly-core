@@ -4,6 +4,7 @@ import {LernaUtil} from "../lib/lerna-util";
 import * as path from "path";
 import {ShowOrFixPackageVersoins} from "../lib/version";
 import * as cli from 'caporal';
+
 export interface versionOptions {
 	fix?: boolean;
 }
@@ -20,14 +21,13 @@ export class VersionCommand extends BaseCommand {
 				ShowOrFixPackageVersoins(Boolean(options.fix), packageInfos);
 				this.spinner.succeed('sync completed')
 			} catch (e) {
-				this.spinner.fail(e.message);
-				this.error(e.message);
-				throw new Error(e);
+				this.spinner.fail(e.message + ' - possibly not in monopoly workspace');
 			}
 		}
 	}
 
 }
+
 cli.command('status', 'show repositories status')
 	.alias('versions')
 	.option('--fix', 'fix dependencies versions')
