@@ -6,12 +6,13 @@ const fsWrite = promisify(fs.writeFile);
 
 export interface FileDocumentOptions {
 	parse?: boolean;
+	delimiter?: number | string;
 }
 
 export class FileDocument<T = any> {
 	public content: T | null = null;
 
-	constructor(public filePath: string, private options: FileDocumentOptions = {parse: true}) {
+	constructor(public filePath: string, private options: FileDocumentOptions = {parse: true, delimiter: 2}) {
 	}
 
 	read(): Promise<FileDocument> {
@@ -26,7 +27,7 @@ export class FileDocument<T = any> {
 	}
 
 	write(): Promise<FileDocument> {
-		return fsWrite(this.filePath, this.options.parse ? (JSON.stringify(this.content, null, 4)) : this.content)
+		return fsWrite(this.filePath, this.options.parse ? (JSON.stringify(this.content, null, this.options.delimiter)) : this.content)
 			.then((data: any) => {return this;}
 			)
 	}
