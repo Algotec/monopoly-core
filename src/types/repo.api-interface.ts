@@ -9,7 +9,7 @@ export interface repoInfo extends IPackageInfo {
 	project: string,
 }
 
-export type repoList = { organization: string, repos: repoInfo[] }[];
+export type repoList = { organization?: string, repos: repoInfo[] }[];
 
 export interface RepoListResults extends AsyncAPIResult {
 	repoList?: repoList;
@@ -44,20 +44,27 @@ export interface repoResult extends AsyncAPIResult {
 
 export interface OpenPRResult extends AsyncAPIResult {
 	openedPR: {
-		pullRequestId: number;
-		url: string;
+		pullRequestId?: number;
+		url?: string;
 		[key: string]: any;
 	}
 }
+
 export interface AffectedResult extends AsyncAPIResult {
-	affected?:boolean;
+	affected?: boolean;
 }
 
 export type PackageDesc = [string, string] // packageName,version
-export interface RepoApiInterface {
-	setCredentials(username: string, password: string): void;
 
-	connect(): Promise<boolean>
+export interface AuthHandler<ARGS = any, OPTS = any> {
+	doLogin(): Promise<any>;
+
+	logout(): Promise<any>;
+
+	getHandler(...args: any[]): (args: ARGS, options: OPTS, logger: Logger) => void | Promise<void>;
+}
+
+export interface RepoApiInterface {
 
 	list(logger: Logger, filter: { name?: string, organization?: string }, branch: string | undefined, dependencies?: string | boolean): Promise<RepoListResults>;
 

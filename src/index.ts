@@ -2,7 +2,8 @@
 // async iterator polyfill for node
 import {promisify} from "util";
 import {cliLogger} from "./lib/logger";
-import {RepoApiInterface} from "./types/index";
+import {AuthHandler, RepoApiInterface} from "./types/index";
+export {AuthHandler, RepoApiInterface} from "./types/index";
 import {BaseCommand} from "./commands/baseCommand";
 import * as caporal from "caporal";
 import {readdir} from "fs";
@@ -24,7 +25,7 @@ export {isInMonopoly} from "./lib/fs";
 export {FileDocument} from "./lib/fileDocument";
 export {LernaUtil} from "./lib/lerna-util";
 export {consoleLogger} from "./lib/logger";
-export default async function makeCli(repoApi: RepoApiInterface, cliOptions: Partial<ICliOptions> = {}): Promise<CliTool> {
+export default async function makeCli(repoApi: RepoApiInterface, cliOptions: Partial<ICliOptions> = {}, authHandler: AuthHandler): Promise<CliTool> {
 	BaseCommand.repoApi = repoApi;
 
 	const cli = caporal
@@ -33,10 +34,9 @@ export default async function makeCli(repoApi: RepoApiInterface, cliOptions: Par
 		.description(cliOptions.description || 'Monopoly based CLI')
 		.version(cliOptions.version || packageJson.version);
 
-	const {doLogin} = require('./commands/login');
 	if (!process.argv.includes('login')) {
 		try {
-			await doLogin()
+			await authHandler.doLogin()
 		} catch (e) {
 			cliLogger.debug(e.message);
 			cliLogger.error('not logged in to Monopoly, please run login command');
