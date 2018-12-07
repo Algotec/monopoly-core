@@ -37,16 +37,6 @@ export default async function makeCli(repoApi: RepoApiInterface, cliOptions: Par
 		.description(cliOptions.description || 'Monopoly based CLI')
 		.version(cliOptions.version || packageJson.version);
 
-	if (!process.argv.includes('login')) {
-		try {
-			await authHandler.doLogin()
-		} catch (e) {
-			cliLogger.debug(e.message);
-			cliLogger.error('not logged in to Monopoly, please run login command');
-			process.exit(1);
-		}
-	}
-
 	const commands = await read(path.join(__dirname, 'commands'));
 	commands
 		.map(filename => path.join(__dirname, 'commands/', filename))
