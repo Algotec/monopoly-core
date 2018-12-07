@@ -1,4 +1,4 @@
-import {PackageDesc,DieHardError, Logger} from "../types";
+import {DieHardError, Logger, PackageDesc} from "../types";
 import {BaseCommand} from "./baseCommand";
 import * as cli from 'caporal';
 import {projectRepoValidator} from "../lib/general";
@@ -22,6 +22,7 @@ export class AffectedCommand extends BaseCommand {
 			try {
 				const [project, repoName] = this.getProjectRepo(args);
 				if (project && repoName && args.packageDesc && this.repoApi.affectedByPackage) {
+					logger.debug(args.packageDesc);
 					const packageDesc: PackageDesc = args.packageDesc.split(':') as PackageDesc;
 					const affected = await this.repoApi.affectedByPackage(logger, packageDesc, project, repoName, options.branch);
 					if (affected.status === 'OK') {
