@@ -3,6 +3,7 @@
 import {promisify} from "util";
 import {cliLogger} from "./lib/logger";
 import {AuthHandler, RepoApiInterface} from "./types/index";
+
 export {AuthHandler, RepoApiInterface} from "./types/index";
 import {BaseCommand} from "./commands/baseCommand";
 import * as caporal from "caporal";
@@ -11,8 +12,10 @@ import * as path from "path";
 import {onlyJSFile} from "./lib/general";
 import {CliTool, ICliOptions} from "./types/general-cli.types";
 
-
-(<any>Symbol).asyncIterator = Symbol.asyncIterator || Symbol.for("Symbol.asyncIterator");
+//node 8/9 compatability
+if (typeof Symbol.asyncIterator === 'undefined') {
+	(<any>Symbol).asyncIterator = Symbol.asyncIterator || Symbol.for("Symbol.asyncIterator");
+}
 
 const read = promisify(readdir);
 
