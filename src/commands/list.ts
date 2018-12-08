@@ -61,6 +61,9 @@ export class ListCommand extends BaseCommand {
 			this.spinner.info(chalk.yellow('listing workspace available repos:')).start();
 		}
 		const repoListResult = await this.repoApi.list(logger, filter, branch, dependencies);
+		if (repoListResult.status ==='ERROR'){
+			throw new Error(repoListResult.message);
+		}
 		if (repoListResult.repoList) {
 			const repoList = repoListResult.repoList;
 			if (json) {
@@ -98,6 +101,7 @@ export class ListCommand extends BaseCommand {
 				this.spinner.stop();
 			}
 		}
+
 	}
 
 }
