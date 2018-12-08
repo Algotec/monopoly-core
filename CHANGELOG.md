@@ -4,7 +4,15 @@
 
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
-
+### [1.0.0](2018-12-08) - Imagine
+- fix: handle connection errors in list response 
+- fix: removal of initial login - Handler will create its own login if needed 
+- fix: node 10 compatability via check before install of async interator fix for node<10 
+- fix: affected was returning wrong info for some packages 
+- fix: move login/auth into CLI 
+- fix : version (status) command error handling 
+- fix : change delimiter to be 2 spaces, and make FileDocument configurable for amnount of spaces when re-writing docs in parse mode 
+- chore: add MIT license 
 ### [1.0.0-beta.10] (2018-09-27)
 	- split from algotec workspace-project repo, change name to @monopoly/core 
 ### [1.0.0-beta.9] (2018-09-27)
