@@ -173,10 +173,10 @@ export abstract class BaseCommand<ARGS = any, OPTS = any> {
 		return packageJson;
 	}
 
-	protected fatalErrorHandler(e: any, message?: string): never {
+	protected fatalErrorHandler(e: Error|string, message?: string): never {
 		this.spinner.fail(message);
-		this.debug(e);
-		throw new DieHardError(e.message||e.error||e);
+		this.debug(e.toString());
+		throw new DieHardError((e as Error).message||(e as any).error||e + ': ' + message);
 	}
 
 	getDocument(filename: string): Promise<FileDocument> {
