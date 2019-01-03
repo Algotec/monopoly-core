@@ -51,7 +51,7 @@ export class AddCommand extends BaseCommand {
 										await this.runNpmInstall(name);
 									}
 								},
-								`git commit -am"Add module ${name}"`
+								`git commit -n -am"Add module ${name}"`
 							];
 							return await
 								this.execAll(cmds);

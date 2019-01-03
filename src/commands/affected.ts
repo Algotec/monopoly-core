@@ -33,7 +33,7 @@ export class AffectedCommand extends BaseCommand {
 							consoleLogger.info('false');
 						}
 					} else {
-						this.fatalErrorHandler(affected.message, 'could not get package dependencies for affected check');
+						this.fatalErrorHandler(affected.message || '', 'could not get package dependencies for affected check');
 					}
 				}
 				else {

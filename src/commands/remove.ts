@@ -30,7 +30,7 @@ export class RemoveCommand extends BaseCommand {
 							this.warn('package not found in lerna.json');
 						}
 					},
-					`git commit -m "removing ${repoName}`
+					`git commit -n -am "removing ${repoName}`
 				];
 				return await (this.execAll(cmds).then((v: any) => {
 					this.spinner.succeed(`removed module ${repoNames}`)
