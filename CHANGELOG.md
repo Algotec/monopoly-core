@@ -1,4 +1,24 @@
 # Change Log
+
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+<a name="1.0.2"></a>
+## [1.0.2](https://github.com/Algotec/monopoly-core/compare/v1.0.0-beta.10...v1.0.2) (2019-01-03)
+
+
+### Bug Fixes
+
+* affected was returning wrong info for some packages ([40b5613](https://github.com/Algotec/monopoly-core/commit/40b5613))
+* do not run git hooks in commit made for submodule add/remove ([5e0d55b](https://github.com/Algotec/monopoly-core/commit/5e0d55b))
+* handle connection errors in list response ([4c9f1e6](https://github.com/Algotec/monopoly-core/commit/4c9f1e6))
+* improve logging in fatarErrorHandler ([97247cb](https://github.com/Algotec/monopoly-core/commit/97247cb))
+* move login/auth into CLI ([b7fae98](https://github.com/Algotec/monopoly-core/commit/b7fae98))
+* node 10 compatability via check before install of async interator fix for node<10 ([624aaf3](https://github.com/Algotec/monopoly-core/commit/624aaf3))
+* removal of initial login - Handler will create its own login if needed ([635e7b8](https://github.com/Algotec/monopoly-core/commit/635e7b8))
+
+
+
+# Change Log
 # Monopoly
 #### Mono repo in a poly repo world.
 
