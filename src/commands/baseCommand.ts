@@ -164,7 +164,7 @@ export abstract class BaseCommand<ARGS = any, OPTS = any> {
 	protected async getPackageJSON() {
 		let packageJson: any;
 		try {
-			packageJson = (await new FileDocument('package.json').read()).content;
+			packageJson = (await new FileDocument('package.json',{addBlankLine:true}).read()).content;
 
 		} catch (e) {
 			this.spinner.fail(`could not read & parse package.json`);

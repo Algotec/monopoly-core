@@ -38,7 +38,7 @@ export class LinkCommand extends BaseCommand {
 					if (packagesNotIncluded.length) {
 						packagesNotIncluded.forEach(async packageInfo => {
 							const pJsonPath = packageInfo.filename;
-							const pJson = await new FileDocument(pJsonPath).read();
+							const pJson = await new FileDocument(pJsonPath,{addBlankLine:true}).read();
 							restorePJSONVersionMap.set(packageInfo, pJson.content.version);
 							pJson.content.version = `0.0.0-temp.${pJson.content.version}`;
 							await pJson.write();
@@ -65,7 +65,7 @@ export class LinkCommand extends BaseCommand {
 					restorePJSONVersionMap.forEach(async (oldVersion, packageInfo: WorkspacePackageInfo) => {
 						const pJsonPath = packageInfo.filename;
 						try {
-							const pJson = await new FileDocument(pJsonPath).read();
+							const pJson = await new FileDocument(pJsonPath,{addBlankLine:true}).read();
 							pJson.content.version = oldVersion;
 							await pJson.write();
 						} catch (e) {

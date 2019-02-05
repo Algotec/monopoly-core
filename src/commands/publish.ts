@@ -259,7 +259,7 @@ export class PublishCommand extends BaseCommand {
 
 	private async getPjsonVersion(pjsonPath: string): Promise<string> {
 		try {
-			const pJsonPublished = (await new FileDocument(pjsonPath).read()).content;
+			const pJsonPublished = (await new FileDocument(pjsonPath,{addBlankLine:true}).read()).content;
 			return pJsonPublished.version;
 		} catch (e) {
 			return this.fatalErrorHandler(e, 'could not read build package.json version');

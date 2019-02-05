@@ -60,7 +60,7 @@ export class LernaUtil {
 	async packageInfo(): Promise<WorkspacePackageInfo[]> {
 		return await Promise.all(this.packageFolders.map(async (packageFolder: string) => {
 				const filePath = path.join(packageFolder, 'package.json');
-				const json = (await new FileDocument(filePath).read()).content;
+				const json = (await new FileDocument(filePath, {addBlankLine: true}).read()).content;
 				const url = (json.repository) ? json.repository.url : '';
 				return {
 					filename: filePath, json, version: json.version, name: json.name, repoUrl: url, folder: packageFolder
