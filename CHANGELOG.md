@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.0.3"></a>
+## [1.0.3](https://github.com/Algotec/monopoly-core/compare/v1.0.2...v1.0.3) (2019-02-05)
+
+
+### Bug Fixes
+
+* blank lines in package.json were not kept ([60328ab](https://github.com/Algotec/monopoly-core/commit/60328ab))
+
+
+
 <a name="1.0.2"></a>
 ## [1.0.2](https://github.com/Algotec/monopoly-core/compare/v1.0.0-beta.10...v1.0.2) (2019-01-03)
 
