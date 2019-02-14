@@ -88,6 +88,10 @@ export class PublishCommand extends BaseCommand {
 	}
 
 	getHandler() {
+		const revListErrorHandler = (messagee?: string) => {
+			const errorMsg = (messagee) ? `git rev-list failed :  ${messagee}` : `git rev-list failed`;
+			this.fatalErrorHandler(errorMsg, 'Remote history differs. Please pull changes.')
+		};
 		return async (args: publishArgs, options: Partial<publishOptions>, logger: Logger) => {
 			this.spinner.start('starting prerequisite checks...');
 			const packageJson = await this.getPackageJSON();
@@ -96,15 +100,16 @@ export class PublishCommand extends BaseCommand {
 			if (gitStatus.stdout.length) {
 				this.fatalErrorHandler(gitStatus.stdout, 'could not publish if working tree is not clean, commit changes first')
 			}
-			let gitRemoteDiff;
-			try {
-				gitRemoteDiff = await this.exec('git rev-list --count --left-only @{u}...HEAD');
-			} catch (e) { // todo: refactor DRY
-				this.fatalErrorHandler(`git rev-list failed`, 'Remote history differs. Please pull changes.')
-			}
-			if (gitRemoteDiff && gitRemoteDiff.stderr.length > 0 || gitRemoteDiff && parseInt(gitRemoteDiff.stdout.trim()) !== 0) {
-				this.fatalErrorHandler(`git rev-list failed :  ${gitRemoteDiff.stdout}`, 'Remote history differs. Please pull changes.')
-			}
+			if (!options.canary){ // canary publishing skips remote check as it is usually done in a commit level
+				let gitRemoteDiff;
+				try {
+					gitRemoteDiff = await this.exec('git rev-list --count --left-only @{u}...HEAD');
+				} catch (e) {
+					revListErrorHandler(e.toString());
+				}
+				if (gitRemoteDiff && gitRemoteDiff.stderr.length > 0 || gitRemoteDiff && parseInt(gitRemoteDiff.stdout.trim()) !== 0) {
+					revListErrorHandler(gitRemoteDiff.stdout);
+				}}
 			if (options.naive) {
 				options.noClean = true;
 				options.noTests = true;
@@ -170,8 +175,7 @@ export class PublishCommand extends BaseCommand {
 				try {
 					await standardVersion(standardArgs);
 					this.spinner.info(`standardVersion work done`);
-				}
-				catch (err) {
+				} catch (err) {
 					this.fatalErrorHandler(err, `standardVersion failed!`);
 				}
 			}
@@ -259,7 +263,7 @@ export class PublishCommand extends BaseCommand {
 
 	private async getPjsonVersion(pjsonPath: string): Promise<string> {
 		try {
-			const pJsonPublished = (await new FileDocument(pjsonPath,{addBlankLine:true}).read()).content;
+			const pJsonPublished = (await new FileDocument(pjsonPath, {addBlankLine: true}).read()).content;
 			return pJsonPublished.version;
 		} catch (e) {
 			return this.fatalErrorHandler(e, 'could not read build package.json version');
