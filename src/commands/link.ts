@@ -4,6 +4,7 @@ import * as path from "path";
 import {LernaUtil} from "../lib/lerna-util";
 import * as cli from 'caporal';
 import {FileDocument} from "../lib/fileDocument";
+import {HoistingUtil} from "../lib/hoisting-util";
 
 export interface linkArguments {
 	packages?: string[];
@@ -52,7 +53,11 @@ export class LinkCommand extends BaseCommand {
 				const cmd = `lerna link ${(options.forceLocal) ? '--force-local' : ''}`;
 				await this.exec(cmd);
 
-				this.spinner.succeed('link completed')
+				this.spinner.succeed('link completed');
+                if(lerna.hoist) {
+                    await new HoistingUtil().makeHoistingLinks(lerna);
+                    this.spinner.succeed('hoisting completed');
+                }
 			}
 			catch
 				(e) {

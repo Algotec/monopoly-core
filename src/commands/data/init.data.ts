@@ -14,7 +14,7 @@ export function getPackageJsonValue() {
 	}, null, 2);
 }
 
-export function getLernaJsonValue(hoist: boolean) {
+export function getLernaJsonValue(hoist: boolean,noHoist:string[] = []) {
 	const lernaBaseConfig: any = {
 		"lerna": lernaVersion,
 		"useGitVersion": true,
@@ -23,6 +23,7 @@ export function getLernaJsonValue(hoist: boolean) {
 		"version": "independent"
 	};
 	if (hoist) {
+		lernaBaseConfig.nohoist = noHoist;
 		lernaBaseConfig.hoist = true;
 	}
 	return JSON.stringify(lernaBaseConfig, null, 4);

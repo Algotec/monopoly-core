@@ -12,6 +12,7 @@ import * as path from "path";
 import {onlyJSFile} from "./lib/general";
 import {CliTool, ICliOptions} from "./types/general-cli.types";
 
+
 //node 8/9 compatability
 if (typeof Symbol.asyncIterator === 'undefined') {
 	(<any>Symbol).asyncIterator = Symbol.asyncIterator || Symbol.for("Symbol.asyncIterator");
@@ -23,6 +24,8 @@ const read = promisify(readdir);
 const packageJson = require('../package.json');
 //exports
 export * from './types';
+export {InitCommand} from "./commands/init";
+export {HoistCommand} from "./commands/hoist";
 export {BaseCommand} from "./commands/baseCommand";
 export {isInMonopoly} from "./lib/fs";
 export {FileDocument} from "./lib/fileDocument";

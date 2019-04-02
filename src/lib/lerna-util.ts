@@ -28,6 +28,22 @@ export class LernaUtil {
 
 	}
 
+	get hoist() : boolean{
+        if (this.selfCheck(this.lernaJson)) {
+            return this.lernaJson.content!.hoist;
+
+        } else
+            throw new Error('lerna json not yet parsed')
+	}
+
+	get noHoist() : string[] {
+        if (this.selfCheck(this.lernaJson)) {
+            return this.lernaJson.content!.nohoist;
+
+        } else
+            throw new Error('lerna json not yet parsed')
+	}
+
 	private selfCheck(file: FileDocument): file is FileDocument<lernaJsonType> {
 		return (file && file.content);
 	}

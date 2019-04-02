@@ -4,6 +4,7 @@ import * as path from "path";
 import {LernaUtil} from "../lib/lerna-util";
 
 import * as cli from 'caporal';
+import {HoistingUtil} from "../lib/hoisting-util";
 export interface installOptions {
 }
 
@@ -18,7 +19,11 @@ export class InstallCommand extends BaseCommand {
 				this.spinner.info(`Setting up packages ${lerna.packageFolders.join(',')}`).start();
 				const cmd = `lerna bootstrap`;
 				await this.exec(cmd, {silent: false, progress: true});
-				this.spinner.succeed('install completed')
+				this.spinner.succeed('install completed');
+				if(lerna.hoist) {
+                    await new HoistingUtil().makeHoistingLinks(lerna);
+                    this.spinner.succeed('hoisting completed');
+                }
 			} catch (e) {
 				let parsedMessage: any;
 				try {
