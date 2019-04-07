@@ -3,37 +3,59 @@ import chalk from "chalk";
 import {consoleLogger} from './logger';
 import {WorkspacePackageInfo} from "../types";
 import * as semver from 'semver'
+import * as path from 'path';
+import {FileDocument} from "./fileDocument";
 
 const log = consoleLogger.info;
 
-export function ShowOrFixPackageVersoins(fix: boolean, packageInfos: WorkspacePackageInfo[]) {
+export async function showOrFixPackageVersoins(fix: boolean, packageInfos: WorkspacePackageInfo[]) {
 	const filesToWrite: { filename: string, content: any }[] = [];
-	const LibPackagesNames = packageInfos.map(packageInfo => packageInfo.json)
+	const libPackagesNames = packageInfos.map(packageInfo => packageInfo.json)
 		.filter(packageJson => !packageJson.private).map(packageJson => packageJson.name);
-
-	log(chalk.green(`${fix ? 'Fixing' : 'Checking for' } used versions of ${LibPackagesNames.join(', ')}`));
+	if (fix) {
+		log(chalk.cyanBright(`Fixing used versions of ${libPackagesNames.join(', ')}`));
+	}
 
 	const fields = ['dependencies', 'devDependencies', 'peerDependencies'];
 
 
-	packageInfos.forEach((packageInfo) => {
-		log(chalk.blue(`${packageInfo.name}: ${packageInfo.version}`));
+	await Promise.all(packageInfos.map(async (packageInfo) => {
+		let linkedAtRoot = false;
+		try {
+			const libInstallPath = path.join("node_modules", ...packageNameToFolderArray(packageInfo.name));
+			consoleLogger.debug('checking for symlink of :' + libInstallPath);
+			const stats = fs.lstatSync(libInstallPath);
+			linkedAtRoot = stats.isSymbolicLink();
+		} catch (e) {
+			consoleLogger.debug(e);
+		}
+		log(chalk.greenBright('➣ ') +  chalk.blue(`${packageInfo.name}: ${packageInfo.version} ${linkedAtRoot ? chalk.yellow('<Linked@WorkspaceRoot>') : ''}`));
 		const json = packageInfo.json;
 		const prompt: any = {};
 		fields.forEach(field => {
-			LibPackagesNames.forEach((LibPackage) => {
+			libPackagesNames.forEach((LibPackage) => {
 				if (json[field] && LibPackage in json[field]) {
 					prompt[field] = prompt[field] || [];
 					const packageDef = packageInfos.find((packageInfo) => packageInfo.name === LibPackage);
 					if (packageDef) {
 						const libPackageVersion = json[field][LibPackage];
 						let satisfy = semver.satisfies(packageDef.version, libPackageVersion);
-						prompt[field].push(`----${chalk.red(LibPackage)} : ${(!satisfy ? chalk.yellow : chalk.blue)(json[field][LibPackage])}`);
+						let symlinked = false;
+						try {
+							const libInstallPath = path.join(packageInfo.folder, 'node_modules', ...packageNameToFolderArray(packageDef.name));
+							consoleLogger.debug('checking for symlink of :' + libInstallPath);
+							const stat = fs.lstatSync(libInstallPath);
+							symlinked = stat.isSymbolicLink();
+						} catch (e) {
+							consoleLogger.debug(e);
+						}
+
+						prompt[field].push(`        ⮡${symlinked ? chalk.yellow("SymLinked->") : "NotLinked!"}--${chalk.red(LibPackage)} : ${(!satisfy ? chalk.yellow : chalk.blue)(json[field][LibPackage])}`);
 						if (fix && !satisfy) {
 							const prefix = (json[field][LibPackage].match(/[\^~]/)) ? json[field][LibPackage][0] : '';
 							json[field][LibPackage] = prefix + packageDef.version;
 							filesToWrite.push({filename: packageInfo.filename, content: json});
-							prompt[field].push(chalk.yellow(`               |->> changed to ${prefix}${packageDef.version}`));
+							prompt[field].push(chalk.yellow(`               ⮡ changed to ${prefix}${packageDef.version}`));
 						}
 					}
 				}
@@ -41,17 +63,21 @@ export function ShowOrFixPackageVersoins(fix: boolean, packageInfos: WorkspacePa
 		});
 		let entries = Object.keys(prompt);
 		entries.forEach((field) => {
-				log(`--${field}`);
+				log(`  ⮡ ${chalk.greenBright(field)}`);
 				log(prompt[field].join('\n'));
 			}
 		);
 		if (filesToWrite) {
-			filesToWrite.forEach(fileInfo => {
-				fs.writeFileSync(fileInfo.filename, JSON.stringify(fileInfo.content, null, 4), {encoding: 'utf8'});
-			});
+			await Promise.all(filesToWrite.map(fileInfo => {
+				const file = new FileDocument(fileInfo.filename, {addBlankLine: true});
+				file.content = fileInfo.content;
+				return file.write();
+			}));
 		}
-	});
+	}));
 }
 
-
+function packageNameToFolderArray(name: string): string[] {
+	return name.split('/');
+}
 
