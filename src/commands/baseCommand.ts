@@ -89,11 +89,12 @@ export abstract class BaseCommand<ARGS = any, OPTS = any> {
 				.then(async (result) => {
 					if (typeof cmd === 'function') {
 						return await cmd();
-					}
-					else return await this.exec(cmd)
+					} else return await this.exec(cmd)
 						.then((result: any) => {
 							(result) ? final.push(result) : null;
 						})
+				}).catch(e => {
+					throw new Error(e);
 				})
 		}, Promise.resolve());
 		return final;
@@ -164,7 +165,7 @@ export abstract class BaseCommand<ARGS = any, OPTS = any> {
 	protected async getPackageJSON() {
 		let packageJson: any;
 		try {
-			packageJson = (await new FileDocument('package.json',{addBlankLine:true}).read()).content;
+			packageJson = (await new FileDocument('package.json', {addBlankLine: true}).read()).content;
 
 		} catch (e) {
 			this.spinner.fail(`could not read & parse package.json`);
@@ -173,10 +174,10 @@ export abstract class BaseCommand<ARGS = any, OPTS = any> {
 		return packageJson;
 	}
 
-	protected fatalErrorHandler(e: Error|string, message?: string): never {
+	protected fatalErrorHandler(e: Error | string, message?: string): never {
 		this.spinner.fail(message);
 		this.debug(e.toString());
-		throw new DieHardError((e as Error).message||(e as any).error||e + ': ' + message);
+		throw new DieHardError((e as Error).message || (e as any).error || e + ': ' + message);
 	}
 
 	getDocument(filename: string): Promise<FileDocument> {
@@ -184,7 +185,7 @@ export abstract class BaseCommand<ARGS = any, OPTS = any> {
 	}
 
 	outputFile(filename: string, content: string) {
-		((sh as any).ShellString(content)as any).to(filename);
+		((sh as any).ShellString(content) as any).to(filename);
 	}
 
 	protected async getWorkspaceRoot(modulePath: string): Promise<string> {
