@@ -7,14 +7,18 @@ import {lernaJsonType, WorkspacePackageInfo} from "../types/package.types";
 
 
 export class LernaUtil {
-	private lernaJson!: FileDocument<lernaJsonType>;
+	public lernaJson!: FileDocument<lernaJsonType>;
 	public packageFolders!: string[];
+	public cleanPackageNames!: string[];
 	private lernaRootPath!: string;
+	public workspaceRoot!: string;
 
 	async parse(pathToLerna: string) {
 		this.lernaJson = await new FileDocument<lernaJsonType>(pathToLerna).read();
+		this.workspaceRoot = path.resolve(pathToLerna.replace('lerna.json', ''));
 		this.lernaRootPath = path.dirname(path.resolve(pathToLerna));
 		this.packageFolders = await this.get_packageFolders();
+		this.cleanPackageNames = this.packageFolders.map(f => f.replace(this.workspaceRoot+path.sep , ''));
 
 		return this;
 	}
@@ -28,20 +32,20 @@ export class LernaUtil {
 
 	}
 
-	get hoist() : boolean{
-        if (this.selfCheck(this.lernaJson)) {
-            return this.lernaJson.content!.hoist;
+	get hoist(): boolean {
+		if (this.selfCheck(this.lernaJson)) {
+			return this.lernaJson.content!.hoist;
 
-        } else
-            throw new Error('lerna json not yet parsed')
+		} else
+			throw new Error('lerna json not yet parsed')
 	}
 
-	get noHoist() : string[] {
-        if (this.selfCheck(this.lernaJson)) {
-            return this.lernaJson.content!.nohoist;
+	get noHoist(): string[] {
+		if (this.selfCheck(this.lernaJson)) {
+			return this.lernaJson.content!.nohoist;
 
-        } else
-            throw new Error('lerna json not yet parsed')
+		} else
+			throw new Error('lerna json not yet parsed')
 	}
 
 	private selfCheck(file: FileDocument): file is FileDocument<lernaJsonType> {

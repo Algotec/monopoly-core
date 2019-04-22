@@ -11,7 +11,6 @@ export interface versionOptions {
 }
 
 
-
 export class VersionCommand extends BaseCommand {
 	getHandler() {
 		return async (args: object, options: versionOptions, logger: Logger) => {
@@ -19,10 +18,11 @@ export class VersionCommand extends BaseCommand {
 				this.debug(`${this.constructor.name} handler args: ${JSON.stringify(args)}, options :${JSON.stringify(options)}`);
 				let lerna = await (new LernaUtil().parse(path.join(process.cwd(), 'lerna.json')));
 				this.debug(JSON.stringify(lerna.packageFolders));
-				this.spinner.info(`${options.fix ? 'Fixing up ' : 'showing'} packages versions for  ${lerna.packageFolders.join(',')}`).start().clear();
+				this.debug(`working with packages ${lerna.cleanPackageNames.join(',')}`);
+				this.spinner.info(`${options.fix ? 'Fixing up ' : 'showing'} packages versions :`).start().clear();
 				let packageInfos = await lerna.packageInfo();
 				await showOrFixPackageVersoins(Boolean(options.fix), packageInfos);
-				this.spinner.succeed('sync completed')
+				this.spinner.succeed('sync completed');
 			} catch (e) {
 				this.spinner.fail(e.message + ' - possibly not in monopoly workspace');
 			}
