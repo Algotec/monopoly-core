@@ -1,4 +1,4 @@
-import {repoResult,DieHardError, Logger} from "../types";
+import {repoResult, DieHardError, Logger} from "../types";
 import chalk from "chalk";
 import {isInMonopoly} from "../lib/fs";
 import {BaseCommand} from "./baseCommand";
@@ -18,6 +18,7 @@ export class AddCommand extends BaseCommand {
 			this.spinner.start('adding projects to monopoly repo....');
 			const {projectRepoNames} = args;
 			const {branch} = options;
+			let hadError = false;
 			try {
 				await this.execAll((projectRepoNames.map((projectAndRepo: string) =>
 					async () => {
@@ -53,16 +54,26 @@ export class AddCommand extends BaseCommand {
 								},
 								`git commit -n -am"Add module ${name}"`
 							];
-							return await
-								this.execAll(cmds);
+							try {
+								await
+									this.execAll(cmds, true);
+							} catch (e) {
+								hadError = true;
+								this.spinner.clear();
+								this.error(e.message);
+								this.spinner.fail(`failed to add ${name}`);
+							}
 						}
 					})));
-				this.spinner.succeed('added successfully! - now run install command');
+				if (hadError) {
+					this.spinner.warn('partially added! - see errors above');
+				} else {
+					this.spinner.succeed('added successfully! - now run install command');
+				}
 			} catch (e) {
 				this.spinner.fail('failed to add !');
 				this.error(e);
-			}
-			finally {
+			} finally {
 				this.spinner.stop();
 			}
 		}
@@ -82,7 +93,7 @@ export class AddCommand extends BaseCommand {
 				}
 			};
 			if (branchIndex > -1) {
-				(repoResult.repo  as any).defaultBranch = projectAndRepo.slice(branchIndex + 1);
+				(repoResult.repo as any).defaultBranch = projectAndRepo.slice(branchIndex + 1);
 			}
 			console.log(JSON.stringify(repoResult, null, 4));
 		} else {
@@ -96,8 +107,7 @@ export class AddCommand extends BaseCommand {
 		try {
 			const packageJson = await this.getDocument(path.join(name, 'package.json'));
 			return packageJson.content.publishDir;
-		}
-		catch (e) {
+		} catch (e) {
 			this.debug('could not get package.json to check publishDir');
 		}
 	}
@@ -106,9 +116,10 @@ export class AddCommand extends BaseCommand {
 		return this.exec('npm install', {cwd: name, progress: true});
 	}
 }
+
 const addCommand = new AddCommand();
 cli.command('add', 'add repo(s) to monopoly')
 	.alias('a')
 	.argument('<projectRepoNames...>', 'project & repository name(s)', projectRepoValidator)
 	.option('--branch <branch>', 'branch name')
-	.action(addCommand.getHandler() as  ActionCallback);
+	.action(addCommand.getHandler() as ActionCallback);

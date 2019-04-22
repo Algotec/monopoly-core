@@ -1,6 +1,6 @@
 import * as winston from 'winston';
 
-let AMP_DEBUG = Boolean(process.env.AMP_DEBUG);
+export let AMP_DEBUG = Boolean(process.env.AMP_DEBUG);
 if (process.argv.indexOf('-v') !== -1) {
 	AMP_DEBUG = true;
 }

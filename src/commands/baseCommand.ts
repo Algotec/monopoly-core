@@ -82,21 +82,46 @@ export abstract class BaseCommand<ARGS = any, OPTS = any> {
 	info: winston.LeveledLogMethod = cliLogger.info;
 	protected spinner: ISpinner = Ora({spinner: 'dots'});
 
-	async execAll(cmds: cmdsArray) {
+	async execAll(cmds: cmdsArray, bailOnError: boolean = false) {
 		const final: execResult[] = [];
-		await cmds.reduce((promise, cmd) => {
-			return promise
-				.then(async (result) => {
-					if (typeof cmd === 'function') {
-						return await cmd();
-					} else return await this.exec(cmd)
-						.then((result: any) => {
-							(result) ? final.push(result) : null;
-						})
-				}).catch(e => {
-					throw new Error(e);
-				})
-		}, Promise.resolve());
+		try {
+			for await (let cmdRet of this.execAllGen(cmds, bailOnError)) {
+				final.push(cmdRet);
+			}
+		} catch (e) {
+			throw e;
+		}
+		return final;
+	}
+
+	async* execAllGen(cmds: cmdsArray, bailOnError: boolean = true) {
+		const final: execResult[] = [];
+		for (let cmd of cmds) {
+			let retVal;
+			if (typeof cmd === 'function') {
+				try {
+					retVal = yield await cmd();
+				} catch (e) {
+					if (bailOnError) {
+						throw e;
+					} else {
+						retVal = e;
+					}
+
+				}
+			} else {
+				try {
+					retVal = yield await this.exec(cmd)
+				} catch (e) {
+					if (bailOnError) {
+						throw new Error(`cmd failed : ${cmd}:\n code: ${e.code} \n stdErr : ${e.stderr}`);
+					} else {
+						retVal = e;
+					}
+				}
+			}
+			final.push(retVal);
+		}
 		return final;
 	}
 

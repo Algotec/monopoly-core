@@ -1,5 +1,4 @@
-import {Logger} from "../types/general-cli.types";
-import {RepoApiInterface} from "../types/repo.api-interface";
+import {ActionCallback, Logger} from "../types/general-cli.types";
 import chalk from "chalk";
 import {isInMonopoly} from "../lib/fs";
 import {BaseCommand, cmdsArray, ShellCommands} from "./baseCommand";
@@ -32,12 +31,12 @@ export class RemoveCommand extends BaseCommand {
 					},
 					`git commit -n -am "removing ${repoName}`
 				];
-				return await (this.execAll(cmds).then((v: any) => {
-					this.spinner.succeed(`removed module ${repoNames}`)
-				}));
+				return await (this.execAll(cmds, true).then((v: any) => {
+					this.spinner.succeed(`removed module ${repoName}`)
+				})).catch(e => {
+					this.spinner.fail(e);
+				});
 			}));
-
-
 		}
 	}
 }
