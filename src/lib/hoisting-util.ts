@@ -41,16 +41,16 @@ export class HoistingUtil {
 				}
 			}
 			return symlink(pkg.folder, packageInstallPath, "dir");
-			//Remove all links to other hoisted packages in node_modules
-			// const nodeModulesDir = path.join(pkg.folder, 'node_modules');
-			// packagesToHoist.forEach((otherPkg) => {
-			// 	const otherPkgInNodeModules = path.join(nodeModulesDir, otherPkg.name);
-			// 	if (fs.existsSync(otherPkgInNodeModules)) {
-			// 		if (fs.lstatSync(otherPkgInNodeModules).isSymbolicLink()) {
-			// 			fs.unlinkSync(otherPkgInNodeModules);
-			// 		}
-			// 	}
-			// });
+			// Remove all links to other hoisted packages in node_modules which may exist as dev install will include peer packages
+			const nodeModulesDir = path.join(pkg.folder, 'node_modules');
+			packagesToHoist.forEach((otherPkg) => {
+				const otherPkgInNodeModules = path.join(nodeModulesDir, otherPkg.name);
+				if (fs.existsSync(otherPkgInNodeModules)) {
+					if (fs.lstatSync(otherPkgInNodeModules).isSymbolicLink()) {
+						fs.unlinkSync(otherPkgInNodeModules);
+					}
+				}
+			});
 		}));
 	}
 }
