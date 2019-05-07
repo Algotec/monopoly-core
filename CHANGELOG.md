@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.1.0"></a>
+# [1.1.0](https://github.com/Algotec/monopoly-core/compare/v1.0.4...v1.1.0) (2019-05-07)
+
+
+### Bug Fixes
+
+* better error messages when commands or connection fails ([8528243](https://github.com/Algotec/monopoly-core/commit/8528243))
+
+
+### Features
+
+* cleaned up version command ([c2c526d](https://github.com/Algotec/monopoly-core/commit/c2c526d))
+* focus & restore commands ([5137551](https://github.com/Algotec/monopoly-core/commit/5137551))
+* hoist migration command + hoisting links from link & install ([73f94d5](https://github.com/Algotec/monopoly-core/commit/73f94d5))
+* partial error management for add/install with better error handling ([5851f22](https://github.com/Algotec/monopoly-core/commit/5851f22))
+
+
+### Reverts
+
+* hoisting will now remove all links to other hoisted packages in node_modules ([f9a9ff6](https://github.com/Algotec/monopoly-core/commit/f9a9ff6))
+
+
+
 <a name="1.0.4"></a>
 ## [1.0.4](https://github.com/Algotec/monopoly-core/compare/v1.0.3...v1.0.4) (2019-02-14)
 
