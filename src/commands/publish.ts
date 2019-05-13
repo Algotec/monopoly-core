@@ -11,7 +11,6 @@ export const canaryPrefix = 'canary';
 export const fullCanaryPrefix = `-${canaryPrefix}.`;
 export type NPMPreValidatedVersions = 'major' | 'minor' | 'patch' | 'premajor' | 'preminor' | 'prepatch' | 'prerelease' | 'from-git'
 
-
 export interface publishArgs {
 	version?: string | NPMPreValidatedVersions;
 }
@@ -120,16 +119,10 @@ export class PublishCommand extends BaseCommand {
 			}
 			if (!options.noClean) {
 				try {
-					this.spinner.info('cleaning node_modules');
-					shell.rm('-rf', 'node_modules');
-				} catch (e) {
-					this.fatalErrorHandler(e, 'cleaning node_modules failed!')
-				}
-				try {
 					this.spinner.info('running npm clean install');
-					await this.exec('npm i', {progress: true});
+					await this.exec('npm ci', {progress: true});
 				} catch (e) {
-					this.fatalErrorHandler(e, 'npm install failed');
+					this.fatalErrorHandler(e, 'npm clean install failed');
 				}
 			}
 			if (!options.noTests) {
@@ -150,6 +143,9 @@ export class PublishCommand extends BaseCommand {
 				this.spinner.info(`starting canary release for distTag ${options.distTag}`);
 				try {
 					await this.exec(`npm version --force --git-tag-version=false ${version}`, {progress: true});
+					if (packageJson.publishDir){
+						await this.exec(`npm version --force --git-tag-version=false ${version}`, {progress: true,cwd:path.join(process.cwd(), packageJson.publishDir)});
+					}
 					await this.exec(`git tag ${canaryTagName} -m"canary release for version ${versionBase} in branch ${branch}"`, {progress: true});
 					await this.exec('git push --tags', {progress: true});
 				} catch (e) {
