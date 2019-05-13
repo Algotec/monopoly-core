@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.1.1"></a>
+## [1.1.1](https://github.com/Algotec/monopoly-core/compare/v1.1.0...v1.1.1) (2019-05-13)
+
+
+### Bug Fixes
+
+* solve problems with publishing publishDir packages ([b4340f6](https://github.com/Algotec/monopoly-core/commit/b4340f6))
+
+
+
 <a name="1.1.0"></a>
 # [1.1.0](https://github.com/Algotec/monopoly-core/compare/v1.0.4...v1.1.0) (2019-05-07)
 
