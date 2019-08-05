@@ -99,7 +99,7 @@ export class PublishCommand extends BaseCommand {
 			if (gitStatus.stdout.length) {
 				this.fatalErrorHandler(gitStatus.stdout, 'could not publish if working tree is not clean, commit changes first')
 			}
-			if (!options.canary){ // canary publishing skips remote check as it is usually done in a commit level
+			if (!options.canary) { // canary publishing skips remote check as it is usually done in a commit level
 				let gitRemoteDiff;
 				try {
 					gitRemoteDiff = await this.exec('git rev-list --count --left-only @{u}...HEAD');
@@ -108,7 +108,8 @@ export class PublishCommand extends BaseCommand {
 				}
 				if (gitRemoteDiff && gitRemoteDiff.stderr.length > 0 || gitRemoteDiff && parseInt(gitRemoteDiff.stdout.trim()) !== 0) {
 					revListErrorHandler(gitRemoteDiff.stdout);
-				}}
+				}
+			}
 			if (options.naive) {
 				options.noClean = true;
 				options.noTests = true;
@@ -132,7 +133,29 @@ export class PublishCommand extends BaseCommand {
 					this.fatalErrorHandler(`Tests failed with exit code : ${retVal.code}`, 'tests failed, stopping publish');
 				}
 			}
-			const standardArgs: any = {dryRun: options.dryRun, silent: !process.env.AMP_DEBUG};
+			const standardArgs: any = {
+				releaseCommitMessageFormat: "chore: release {{currentTag} \n ***NO_CI***",
+				preset: {  //https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.0.0/README.md
+					header: "Changelog",
+					"types": [
+						{"type": "feat", "section": "Features"},
+						{"type": "fix", "section": "Bug Fixes"},
+						{"type": "chore", "hidden": true},
+						{"type": "docs", "hidden": true},
+						{"type": "style", "section": "Style Changes", "hidden": false},
+						{"type": "refactor", "hidden": true},
+						{"type": "perf", "section": "Performance improvements", "hidden": false},
+						{"type": "test", "hidden": true}
+					],
+					preMajor: false,
+					commitUrlFormat: "{{host}}/{{owner}}/{{repository}}/commit/{{hash}}",
+					compareUrlFormat: "{{host}}/{{owner}}/{{repository}}/branches?_a=commits&baseVersion=GT{{previousTag}}&targetVersion=GT{{currentTag}}",
+					issueUrlFormat: "http://jiranew/browse/{{id}}",
+					userUrlFormat: "{{host}}/{{user}}",// no support really in TFS
+					releaseCommitMessageFormat: "chore: release {{currentTag} \n ***NO_CI***",
+				},
+				dryRun: options.dryRun, silent: !process.env.AMP_DEBUG
+			};
 			if (options.canary) {
 				let {branch, sha} = await this.getCanaryArgs();
 				let versionBase = this.getVersionBase(packageJson.version);
@@ -143,8 +166,8 @@ export class PublishCommand extends BaseCommand {
 				this.spinner.info(`starting canary release for distTag ${options.distTag}`);
 				try {
 					await this.exec(`npm version --force --git-tag-version=false ${version}`, {progress: true});
-					if (packageJson.publishDir){
-						await this.exec(`npm version --force --git-tag-version=false ${version}`, {progress: true,cwd:path.join(process.cwd(), packageJson.publishDir)});
+					if (packageJson.publishDir) {
+						await this.exec(`npm version --force --git-tag-version=false ${version}`, {progress: true, cwd: path.join(process.cwd(), packageJson.publishDir)});
 					}
 					await this.exec(`git tag ${canaryTagName} -m"canary release for version ${versionBase} in branch ${branch}"`, {progress: true});
 					await this.exec('git push --tags', {progress: true});
