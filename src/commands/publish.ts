@@ -162,6 +162,7 @@ export class PublishCommand extends BaseCommand {
 				const standardArgs: any = {
 					releaseCommitMessageFormat: "chore: release {{currentTag} \n ***NO_CI***",
 					preset: {  //https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.0.0/README.md
+						name:"Algotec TFS-Git standard",
 						header: "Changelog",
 						"types": [
 							{"type": "feat", "section": "Features"},
