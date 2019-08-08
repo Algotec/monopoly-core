@@ -187,7 +187,7 @@ export abstract class BaseCommand<ARGS = any, OPTS = any> {
 		return (projectRepoNames || '').split('/');
 	}
 
-	protected async getPackageJSON() {
+	protected async getPackageJSON(): Promise<any> {
 		let packageJson: any;
 		try {
 			packageJson = (await new FileDocument('package.json', {addBlankLine: true}).read()).content;
