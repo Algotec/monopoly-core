@@ -159,11 +159,14 @@ export class PublishCommand extends BaseCommand {
 					this.fatalErrorHandler('npm version failed', 'npm version failed, stopping publish');
 				}
 			} else {
+
+
 				const standardArgs: any = {
-					releaseCommitMessageFormat: "chore: release {{currentTag} \n ***NO_CI***",
+					releaseCommitMessageFormat: "chore: release {{currentTag}} \n ***NO_CI***",
+
 					preset: {  //https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.0.0/README.md
-						name:"Algotec TFS-Git standard",
-						header: "Changelog",
+						name: "@algotec/conventionalcommits",
+						header: "Change Log",
 						"types": [
 							{"type": "feat", "section": "Features"},
 							{"type": "fix", "section": "Bug Fixes"},
@@ -175,11 +178,10 @@ export class PublishCommand extends BaseCommand {
 							{"type": "test", "hidden": true}
 						],
 						preMajor: false,
-						commitUrlFormat: "{{host}}/{{owner}}/{{repository}}/commit/{{hash}}",
-						compareUrlFormat: "{{host}}/{{owner}}/{{repository}}/branches?_a=commits&baseVersion=GT{{previousTag}}&targetVersion=GT{{currentTag}}",
+						commitUrlFormat: "{{repository}}/commit/{{hash}}",
+						compareUrlFormat: "{{repository}}/branches?_a=commits&baseVersion=GT{{previousTag}}&targetVersion=GT{{currentTag}}",
 						issueUrlFormat: "http://jiranew/browse/{{id}}",
 						userUrlFormat: "{{host}}/{{user}}",// no support really in TFS
-						releaseCommitMessageFormat: "chore: release {{currentTag} \n ***NO_CI***",
 					},
 					dryRun: options.dryRun, silent: !process.env.AMP_DEBUG
 				};
