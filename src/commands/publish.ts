@@ -38,6 +38,10 @@ export interface unPublishOptions {
 }
 
 export class PublishCommand extends BaseCommand {
+	//https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.0.0/README.md
+	static changelogPreset: string | object = 'conventionalcommits';
+	static releaseCommitMessageFormat: string = 'chore: release {{currentTag}}';
+
 	unpublish() {
 		return async (args: publishArgs, options: Partial<unPublishOptions>, logger: Logger) => {
 			if (args.version || options.canary) {
@@ -97,6 +101,7 @@ export class PublishCommand extends BaseCommand {
 			const packageJson = await this.getPackageJSON();
 			const monopolyExtraConfig = packageJson.config && packageJson.config.monopoly ? packageJson.config.monopoly : {};
 			const gitStatus = await this.exec('git status --porcelain');
+
 			if (gitStatus.stdout.length) {
 				this.fatalErrorHandler(gitStatus.stdout, 'could not publish if working tree is not clean, commit changes first')
 			}
@@ -159,31 +164,11 @@ export class PublishCommand extends BaseCommand {
 					this.fatalErrorHandler('npm version failed', 'npm version failed, stopping publish');
 				}
 			} else {
-
-
 				const standardArgs: any = {
-					releaseCommitMessageFormat: "chore: release {{currentTag}} \n ***NO_CI***",
-
-					preset: {  //https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.0.0/README.md
-						name: "@algotec/conventionalcommits",
-						header: "Change Log",
-						"types": [
-							{"type": "feat", "section": "Features"},
-							{"type": "fix", "section": "Bug Fixes"},
-							{"type": "chore", "hidden": true},
-							{"type": "docs", "hidden": true},
-							{"type": "style", "section": "Style Changes", "hidden": false},
-							{"type": "refactor", "hidden": true},
-							{"type": "perf", "section": "Performance improvements", "hidden": false},
-							{"type": "test", "hidden": true}
-						],
-						preMajor: false,
-						commitUrlFormat: "{{repository}}/commit/{{hash}}",
-						compareUrlFormat: "{{repository}}/branches?_a=commits&baseVersion=GT{{previousTag}}&targetVersion=GT{{currentTag}}",
-						issueUrlFormat: "http://jiranew/browse/{{id}}",
-						userUrlFormat: "{{host}}/{{user}}",// no support really in TFS
-					},
-					dryRun: options.dryRun, silent: !process.env.AMP_DEBUG
+					releaseCommitMessageFormat: PublishCommand.releaseCommitMessageFormat,
+					preset: PublishCommand.changelogPreset,
+					dryRun: options.dryRun,
+					silent: !process.env.AMP_DEBUG
 				};
 				if (args.version) {
 					standardArgs.releaseAs = args.version;
