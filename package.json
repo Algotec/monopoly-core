@@ -26,12 +26,10 @@
   "devDependencies": {
     "@types/glob": "^7.1.1",
     "@types/node": "^12.6.9",
-    "@types/ora": "^3.2.0",
     "@types/rimraf": "^2.0.2",
     "@types/rx": "^4.1.1",
     "@types/semver": "^6.0.1",
     "@types/shelljs": "^0.8.5",
-    "@types/winston": "^2.4.4",
     "@types/xml2js": "^0.4.4",
     "typescript": "~3.5.3"
   },
