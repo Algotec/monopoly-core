@@ -36,8 +36,9 @@ export class HoistingUtil {
 			}
 			if (pkg.name.includes('/')) {
 				const scope = pkg.name.slice(0, pkg.name.indexOf('/'));
-				if (fs.existsSync(scope) == null) {
-					fs.mkdirSync(path.join('node_modules', scope));
+				const scopeFolder = path.join('node_modules', scope);
+				if (!fs.existsSync(scopeFolder)) {
+					fs.mkdirSync(scopeFolder);
 				}
 			}
 			return symlink(pkg.folder, packageInstallPath, "dir");
