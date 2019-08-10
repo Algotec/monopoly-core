@@ -5,6 +5,7 @@ import * as caporal from "caporal";
 import {FileDocument} from "../lib/fileDocument";
 import * as path from "path";
 import * as semver from 'semver';
+import {existsSync} from 'fs';
 
 const standardVersion = require("standard-version");
 export const canaryPrefix = 'canary';
@@ -37,6 +38,10 @@ export interface unPublishOptions {
 }
 
 export class PublishCommand extends BaseCommand {
+	//https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.0.0/README.md
+	static changelogPreset: string | object = 'conventionalcommits';
+	static releaseCommitMessageFormat: string = 'chore: release {{currentTag}}';
+
 	unpublish() {
 		return async (args: publishArgs, options: Partial<unPublishOptions>, logger: Logger) => {
 			if (args.version || options.canary) {
@@ -96,10 +101,11 @@ export class PublishCommand extends BaseCommand {
 			const packageJson = await this.getPackageJSON();
 			const monopolyExtraConfig = packageJson.config && packageJson.config.monopoly ? packageJson.config.monopoly : {};
 			const gitStatus = await this.exec('git status --porcelain');
+
 			if (gitStatus.stdout.length) {
 				this.fatalErrorHandler(gitStatus.stdout, 'could not publish if working tree is not clean, commit changes first')
 			}
-			if (!options.canary){ // canary publishing skips remote check as it is usually done in a commit level
+			if (!options.canary) { // canary publishing skips remote check as it is usually done in a commit level
 				let gitRemoteDiff;
 				try {
 					gitRemoteDiff = await this.exec('git rev-list --count --left-only @{u}...HEAD');
@@ -108,7 +114,8 @@ export class PublishCommand extends BaseCommand {
 				}
 				if (gitRemoteDiff && gitRemoteDiff.stderr.length > 0 || gitRemoteDiff && parseInt(gitRemoteDiff.stdout.trim()) !== 0) {
 					revListErrorHandler(gitRemoteDiff.stdout);
-				}}
+				}
+			}
 			if (options.naive) {
 				options.noClean = true;
 				options.noTests = true;
@@ -132,7 +139,7 @@ export class PublishCommand extends BaseCommand {
 					this.fatalErrorHandler(`Tests failed with exit code : ${retVal.code}`, 'tests failed, stopping publish');
 				}
 			}
-			const standardArgs: any = {dryRun: options.dryRun, silent: !process.env.AMP_DEBUG};
+
 			if (options.canary) {
 				let {branch, sha} = await this.getCanaryArgs();
 				let versionBase = this.getVersionBase(packageJson.version);
@@ -140,11 +147,16 @@ export class PublishCommand extends BaseCommand {
 				const distTag = this.getCanaryDistTag(versionBase, branch);
 				const canaryTagName = this.getCanaryTagName(versionBase, sha);
 				options.distTag = distTag;
+
 				this.spinner.info(`starting canary release for distTag ${options.distTag}`);
 				try {
 					await this.exec(`npm version --force --git-tag-version=false ${version}`, {progress: true});
-					if (packageJson.publishDir){
-						await this.exec(`npm version --force --git-tag-version=false ${version}`, {progress: true,cwd:path.join(process.cwd(), packageJson.publishDir)});
+					if ((packageJson as any).publishDir) {
+						const fullPublishDir = path.join(process.cwd(), ...(packageJson as any).publishDir.split('/'));
+						const publishDireExists = existsSync(fullPublishDir);
+						if (publishDireExists) {
+							await this.exec(`npm version --force --git-tag-version=false ${version}`, {progress: true, cwd: fullPublishDir});
+						}
 					}
 					await this.exec(`git tag ${canaryTagName} -m"canary release for version ${versionBase} in branch ${branch}"`, {progress: true});
 					await this.exec('git push --tags', {progress: true});
@@ -152,6 +164,12 @@ export class PublishCommand extends BaseCommand {
 					this.fatalErrorHandler('npm version failed', 'npm version failed, stopping publish');
 				}
 			} else {
+				const standardArgs: any = {
+					releaseCommitMessageFormat: PublishCommand.releaseCommitMessageFormat,
+					preset: PublishCommand.changelogPreset,
+					dryRun: options.dryRun,
+					silent: !process.env.AMP_DEBUG
+				};
 				if (args.version) {
 					standardArgs.releaseAs = args.version;
 				} else if (options.prerelease) {
@@ -266,9 +284,9 @@ export class PublishCommand extends BaseCommand {
 		}
 	}
 
-	private async getCanaryArgs() {
-		const branch = (await this.exec(`git symbolic-ref -q --short HEAD`)).stdout.trim();
-		const sha = (await this.exec(`git rev-parse --short HEAD`, {progress: true})).stdout.trim();
+	private async getCanaryArgs(): Promise<{ branch: string; sha: string }> {
+		const branch: string = (await this.exec(`git symbolic-ref -q --short HEAD`)).stdout.trim();
+		const sha: string = (await this.exec(``, {progress: true})).stdout.trim();
 		return {branch, sha};
 	}
 

@@ -27,6 +27,7 @@ export * from './types';
 export {InitCommand} from "./commands/init";
 export {HoistCommand} from "./commands/hoist";
 export {BaseCommand} from "./commands/baseCommand";
+export {PublishCommand} from "./commands/publish";
 export {isInMonopoly} from "./lib/fs";
 export {FileDocument} from "./lib/fileDocument";
 export {LernaUtil} from "./lib/lerna-util";

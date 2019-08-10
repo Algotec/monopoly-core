@@ -75,11 +75,11 @@ export abstract class BaseCommand<ARGS = any, OPTS = any> {
 
 	static repoApi: RepoApiInterface;
 	repoApi: RepoApiInterface;
-	log: winston.LogMethod = cliLogger.log;
-	debug: winston.LeveledLogMethod = cliLogger.debug;
-	warn: winston.LeveledLogMethod = cliLogger.warn;
-	error: winston.LeveledLogMethod = cliLogger.error;
-	info: winston.LeveledLogMethod = cliLogger.info;
+	log: winston.LogMethod = cliLogger.log.bind(cliLogger);
+	debug: winston.LeveledLogMethod = cliLogger.debug.bind(cliLogger);
+	warn: winston.LeveledLogMethod = cliLogger.warn.bind(cliLogger);
+	error: winston.LeveledLogMethod = cliLogger.error.bind(cliLogger);
+	info: winston.LeveledLogMethod = cliLogger.info.bind(cliLogger);
 	protected spinner: ISpinner = Ora({spinner: 'dots'});
 
 	async execAll(cmds: cmdsArray, bailOnError: boolean = false) {
@@ -170,7 +170,7 @@ export abstract class BaseCommand<ARGS = any, OPTS = any> {
 						}
 						return resolve({code, stdout, stderr});
 					});
-					if (options && options.progress) {
+					if (options && options.progress && childProcess.stdout && childProcess.stderr) {
 						childProcess.stdout.pipe(process.stdout);
 						childProcess.stderr.pipe(process.stderr);
 					}
@@ -187,7 +187,7 @@ export abstract class BaseCommand<ARGS = any, OPTS = any> {
 		return (projectRepoNames || '').split('/');
 	}
 
-	protected async getPackageJSON() {
+	protected async getPackageJSON(): Promise<any> {
 		let packageJson: any;
 		try {
 			packageJson = (await new FileDocument('package.json', {addBlankLine: true}).read()).content;
