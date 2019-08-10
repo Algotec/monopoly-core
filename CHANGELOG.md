@@ -1,6 +1,23 @@
-# Change Log
+# Changelog
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+## [1.2.0](https://github.com/Algotec/monopoly-core/compare/v1.1.1...v1.2.0) (2019-08-10)
+
+
+### Bug Fixes
+
+* **commit:** fix commit change preset ([62b551a](https://github.com/Algotec/monopoly-core/commit/62b551a))
+* bug in linking scoped modules where scope folder does not exist ([2ca6856](https://github.com/Algotec/monopoly-core/commit/2ca6856))
+* changelog setup, needs @algotec/conventional-changelog-conventionalcommits ([864ba82](https://github.com/Algotec/monopoly-core/commit/864ba82))
+* do not run npm version in publishDir if it doesn't exist ([34ed49d](https://github.com/Algotec/monopoly-core/commit/34ed49d))
+* fix log formatting with new winston ([4fafa32](https://github.com/Algotec/monopoly-core/commit/4fafa32))
+
+
+### Features
+
+* integrate conventional-changelog-config-spec to allow proper changelog urls ([c94a552](https://github.com/Algotec/monopoly-core/commit/c94a552))
+* publish command configuration options ([1dc9a42](https://github.com/Algotec/monopoly-core/commit/1dc9a42))
 
 <a name="1.1.1"></a>
 ## [1.1.1](https://github.com/Algotec/monopoly-core/compare/v1.1.0...v1.1.1) (2019-05-13)
