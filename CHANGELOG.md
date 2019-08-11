@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 1.2.1 (2019-08-11)
+
+
+### Bug Fixes
+
+* canary publish will fail ([761a9ae0c27c20980c02f1dbcb4aff89055ba517](https://github.com/Algotec/https://github.com/Algotec/monopoly-core/commit/761a9ae0c27c20980c02f1dbcb4aff89055ba517))
+
 ## [1.2.0](https://github.com/Algotec/monopoly-core/compare/v1.1.1...v1.2.0) (2019-08-10)
 
 
