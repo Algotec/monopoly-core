@@ -286,7 +286,7 @@ export class PublishCommand extends BaseCommand {
 
 	private async getCanaryArgs(): Promise<{ branch: string; sha: string }> {
 		const branch: string = (await this.exec(`git symbolic-ref -q --short HEAD`)).stdout.trim();
-		const sha: string = (await this.exec(``, {progress: true})).stdout.trim();
+		const sha: string = (await this.exec(`git rev-parse --short HEAD`, {progress: true})).stdout.trim();
 		return {branch, sha};
 	}
 
