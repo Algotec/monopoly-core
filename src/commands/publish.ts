@@ -183,6 +183,7 @@ export class PublishCommand extends BaseCommand {
 					standardArgs.skip = standardArgs.skip || {};
 					standardArgs.skip.bump = true;
 					standardArgs.skip.tag = true;
+					standardArgs.skip.commit = true;
 				}
 
 				this.spinner.info('bumping version and updating changelog via standardVersion');
